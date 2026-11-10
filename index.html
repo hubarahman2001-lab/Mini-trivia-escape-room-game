@@ -35,6 +35,19 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 #flash.go{animation:flash .9s ease-out}
 @keyframes flash{0%{opacity:.9}100%{opacity:0}}
 
+/* ---------- story radio + transitions ---------- */
+#radio{position:fixed;left:3vw;bottom:5vh;z-index:27;width:min(660px,62vw);display:flex;gap:14px;align-items:flex-start;padding:14px 18px;
+  background:rgba(6,17,28,.9);border:1px solid #1d3a52;border-radius:16px;box-shadow:0 14px 40px rgba(0,0,0,.55);
+  opacity:0;transform:translateY(14px);transition:.45s;pointer-events:none}
+#radio.on{opacity:1;transform:none}
+#radio .av{flex:none;width:clamp(38px,3.6vw,52px);height:clamp(38px,3.6vw,52px);border-radius:50%;display:grid;place-items:center;
+  background:var(--amber);color:#2a1a00;font:800 clamp(18px,1.8vw,26px) var(--sans);box-shadow:0 0 0 3px rgba(255,178,62,.25)}
+#radio .nm{font-size:clamp(11px,1vw,13px);color:var(--lcd);font-family:var(--num);margin-bottom:3px;opacity:.85}
+#radio .tx{font-size:clamp(14px,1.45vw,20px);line-height:1.4;color:#eaf6ff;min-height:2.8em}
+#fade{position:absolute;inset:0;background:#02060b;opacity:0;pointer-events:none;transition:opacity .7s ease-in-out}
+#hsl{transition:opacity .9s}
+#hsl.wait{opacity:0;pointer-events:none}
+.bg{transition:opacity .9s ease, transform 3.5s ease-out, filter .5s}
 /* ---------- hotspots ---------- */
 .hs{position:absolute;border-radius:16px;cursor:pointer}
 .hs .dot{position:absolute;left:50%;top:50%;width:max(24px,2.1vw);height:max(24px,2.1vw);margin:calc(max(24px,2.1vw)/-2) 0 0 calc(max(24px,2.1vw)/-2);
@@ -198,7 +211,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 </head>
 <body>
 <div id="app">
-  <div id="stage"><div id="bgs"></div><div id="hsl"></div><div id="shade"></div><div id="fx"></div></div>
+  <div id="stage"><div id="bgs"></div><div id="hsl"></div><div id="shade"></div><div id="fx"></div><div id="fade"></div></div>
 
   <header id="hud">
     <div class="grp">
@@ -221,6 +234,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 
   <div id="cam"><video id="vid" playsinline muted></video><canvas id="camc" width="320" height="240"></canvas><em>your hand</em></div>
   <div id="heard"></div>
+  <div id="radio"><div class="av">S</div><div><div class="nm">SAM · SECURITY, ON THE RADIO</div><div class="tx"></div></div></div>
   <div id="banner"><div class="bf" id="bFloor">P</div><div class="bt"><b id="bTitle"></b><span id="bLine"></span></div></div>
   <button id="next" data-hit></button>
   <div id="ov"></div>
@@ -420,6 +434,25 @@ const SCENES = [
    spots:[ { id:"keypad", label:"Keypad", cx:47.7, cy:51.5, w:8.5, h:21, type:"keypad" } ]}
 ];
 
+const STORY={
+ parking:{say:"Sam here, Security. Stay on the line. A badge went missing today, so every door matters tonight. Stairs are ahead, and so is someone you know.",after:"Good call. Up the stairs, then the escalator."},
+ escalator:{say:"Ground floor is clear on my cameras. Badge on, escalator up. Reception is next."},
+ reception:{say:"Reception has gone home, but the desk hasn't. Check the visitor log and the badge tray before you move on.",after:"Desk secured. Gates are next, and I've flagged one of them."},
+ gates:{say:"Camera three, by the gates. The side door looks wrong. Take a look.",after:"Door shut. The ground floor is sealed. Lifts are yours."},
+ lifts:{say:"One lift is still open on my screen, and it isn't empty.",after:"Visitor sorted. Ride up to Floor 4."},
+ entrance:{say:"Floor 4. Tap in at the reader. And keep your voice down out here.",after:"Door's yours. Your desk is straight ahead."},
+ desk:{say:"That's your desk. Is anything on it that shouldn't be?",after:"Desk is clean. Meeting room next. The 5 pm lot left in a hurry."},
+ meeting:{say:"The 5 pm meeting left fast. Check the board and the table.",after:"Room is clear. Print station is the last zone."},
+ printer:{say:"The printer logged a job at 5:12 that nobody collected. Look around it.",after:"Print room is clean. One door left: the server room."},
+ server:{say:"This is it. Four digits from your top bar and I can lift the lockdown. The keypad is on the door."}
+};
+function radio(text,hold=7000){
+  const r=$("#radio"),tx=r.querySelector(".tx"); clearInterval(radio.t); clearTimeout(radio.h);
+  tx.textContent=""; r.classList.add("on"); tone(1500,.06,"square",.035); let i=0;
+  radio.t=setInterval(()=>{ tx.textContent=text.slice(0,++i); if(i>=text.length){clearInterval(radio.t);radio.h=setTimeout(hideRadio,hold);} },22);
+  speak("Sam. "+text);
+}
+function hideRadio(){ clearInterval(radio.t); clearTimeout(radio.h); $("#radio").classList.remove("on"); }
 const ZONE_MSG={1:"The entrance is secured: no stray visitor can wander in tonight.",2:"The lifts and the office door are covered. No one gets up here uninvited.",3:"Your desk and the meeting room are clean. Nothing left out for the morning.",4:"The print room is cleared. Nothing left in a tray or an open cabinet."};
 const FINAL_Q = {
   title:"Final check",
@@ -471,6 +504,7 @@ function sfx(k){
   if(k==="hint")tone(990,.12,"triangle",.1);
   if(k==="tick")tone(1200,.05,"square",.04);
   if(k==="unlock"){[523,659,784,1047,1319].forEach((f,i)=>tone(f,.25,"sine",.13,i*.1));}
+  if(k==="steps"){for(let i=0;i<5;i++)tone(95+(i%2)*18,.09,"triangle",.1,i*.16);}
   if(k==="door"){tone(110,.7,"sawtooth",.1);tone(220,.7,"triangle",.08,.1);}
 }
 
@@ -510,10 +544,12 @@ function penalty(sec=WRONG_PENALTY){ G.timeLeft=Math.max(1,G.timeLeft-sec); toas
 
 /* ---------- scenes ---------- */
 function preload(){ for(const k in IMG){ const d=document.createElement("div"); d.className="bg"; d.dataset.k=k; d.style.backgroundImage="url("+IMG[k]+")"; bgs.appendChild(d);} }
-function showBg(k){ [...bgs.children].forEach(d=>d.classList.toggle("on",d.dataset.k===k)); }
+function showBg(k){ [...bgs.children].forEach(d=>{ const on=d.dataset.k===k;
+  if(on&&!d.classList.contains("on")){ d.style.transition="none"; d.style.transform="scale(1.16)"; void d.offsetWidth; d.style.transition=""; d.style.transform=""; }
+  d.classList.toggle("on",on); }); }
 
 function enterScene(i,silent){
-  G.idx=i; const S=G.scenes[i];
+  G.idx=i; hideRadio(); const S=G.scenes[i];
   hsl.innerHTML=""; $("#next").classList.remove("on");
   showBg(S.img);
   S.spots.forEach(sp=>{
@@ -523,7 +559,8 @@ function enterScene(i,silent){
     d.addEventListener("click",()=>onSpot(sp)); hsl.appendChild(d);
   });
   G.mode="play"; updateHud();
-  if(!silent) banner(S);
+  hsl.classList.add("wait"); clearTimeout(enterScene.t); enterScene.t=setTimeout(()=>hsl.classList.remove("wait"),silent?0:1500);
+  if(!silent){ const ST=STORY[S.id]; if(ST) setTimeout(()=>{ if(G.idx===i&&G.mode==="play")radio(ST.say); },900); }
 }
 function banner(S){
   $("#bFloor").textContent=S.floor; $("#bTitle").textContent=S.level+" · "+S.name; $("#bLine").textContent=S.line;
@@ -545,22 +582,33 @@ function spotDone(sp){
 }
 function sceneComplete(S){
   if(S.final) return;
+  const ST=STORY[S.id];
   if(S.auto){ setTimeout(goNext,350); return; }
-  if(S.zoneEnd){ setTimeout(()=>openDigit(S),700); }
+  if(ST&&ST.after)radio(ST.after,6000);
+  if(S.zoneEnd){ setTimeout(()=>{ if(G.mode==="play")openDigit(S); },2800); }
   else showNext(S);
 }
 function showNext(S){ const n=$("#next"); n.textContent=S.next+"  ➜"; n.classList.add("on"); }
 function goNext(){
   if(G.mode!=="play"&&G.mode!=="digit")return;
+  const i=G.idx;
   $("#next").classList.remove("on");
   const nx=G.idx+1; if(nx>=G.scenes.length)return;
-  const f=$("#flash"); f.classList.remove("go"); void f.offsetWidth; f.classList.add("go");
-  enterScene(nx);
+  if(G.walking)return; G.walking=true; hideRadio(); G.mode="walk";
+  const cur=bgs.querySelector(".bg.on"), fd=$("#fade");
+  hsl.classList.add("wait"); sfx("steps");
+  if(cur){ cur.style.transition="transform .8s ease-in"; cur.style.transform="scale(1.32)"; }
+  fd.style.opacity=1;
+  setTimeout(()=>{
+    if(cur){ cur.style.transition="none"; cur.style.transform=""; }
+    enterScene(nx); G.walking=false;
+    setTimeout(()=>{ fd.style.opacity=0; if(cur)cur.style.transition=""; },120);
+  },800);
 }
 $("#next").addEventListener("click",()=>{ if(G.paused)return; sfx("select"); goNext(); });
 
 /* ---------- overlay helpers ---------- */
-function openOv(html,mode,blur){ ov.innerHTML='<div class="card">'+html+'</div>'; ov.className="show"; stage.classList.toggle("dim",!blur); stage.classList.toggle("blur",!!blur); G.mode=mode; setHover(null); }
+function openOv(html,mode,blur){ hideRadio(); ov.innerHTML='<div class="card">'+html+'</div>'; ov.className="show"; stage.classList.toggle("dim",!blur); stage.classList.toggle("blur",!!blur); G.mode=mode; setHover(null); }
 function closeOv(){ ov.className=""; ov.innerHTML=""; stage.classList.remove("dim","blur"); G.mode="play"; setHover(null); }
 const bar=(t,r)=>'<div class="bar"><div class="ic">i</div>'+esc(t)+(r?'<small>'+esc(r)+'</small>':'')+'</div>';
 
