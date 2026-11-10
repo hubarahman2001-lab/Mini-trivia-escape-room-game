@@ -27,6 +27,8 @@ The webcam tracks your hand, and a glowing outline of it follows your finger on 
 
 A short hand check at the start teaches the moves and confirms the camera can see them.
 
+**Tips for the camera:** sit about an arm's length away with your whole hand in view, and keep it in the middle of the picture. The camera preview (bottom left) shows the move the game sees, for example "🤏 Pinch" or "✊ Fist", and turns red when it loses your hand. Pinch however feels natural: other fingers out or curled both work.
+
 **No camera?** Choose "Play with mouse". Every task also works with click, drag and hold.
 **Voice** (Chrome or Edge): say "A", "B", "C", "hint", "repeat", "pause", "next", or the code digits at the keypad.
 

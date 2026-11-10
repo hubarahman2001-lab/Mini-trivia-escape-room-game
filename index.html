@@ -191,8 +191,19 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
   background:radial-gradient(circle at 50% 38%,#8ea4b7 26%,transparent 27%),radial-gradient(ellipse at 50% 108%,#8ea4b7 52%,transparent 53%),#dce5ec}
 .idc b{position:absolute;left:0;right:0;bottom:9%;text-align:center;font:800 clamp(7px,.62vw,10px)/1 var(--sans);color:#14202b;letter-spacing:.04em}
 .idc.temp::before{background:#f08a1c}.idc.temp b{color:#a3510a}
-#pocket{position:fixed;left:50%;bottom:5vh;z-index:32;transform:translate(-50%,40px);opacity:0;transition:.5s cubic-bezier(.2,1.3,.4,1);text-align:center;pointer-events:none}
-#pocket.on{transform:translate(-50%,0);opacity:1}
+#pocket{position:fixed;left:var(--px,50%);top:58%;z-index:32;transform:translate(-50%,-50%) scale(.85);opacity:0;transition:transform .5s cubic-bezier(.2,1.3,.4,1),opacity .35s;text-align:center;pointer-events:none}
+#pocket.on{transform:translate(-50%,-50%);opacity:1}
+#pocket .idc.gone{background:rgba(6,17,28,.55);border:3px dashed var(--no);box-shadow:none;display:grid;place-items:center}
+#pocket .idc.gone::before,#pocket .idc.gone::after{display:none}
+#pocket .idc.gone b{position:static;font:800 clamp(30px,3vw,44px) var(--num);color:var(--no)}
+#lanyard{position:fixed;left:50%;top:0;height:31vh;aspect-ratio:140/320;z-index:31;transform:translate(-50%,-160%);transition:transform .6s cubic-bezier(.2,1.25,.4,1);pointer-events:none}
+#lanyard b,#lanyard .zone{opacity:0;transition:opacity .25s}#lanyard.on b,#lanyard.on .zone{opacity:1}
+#lanyard.on{transform:translate(-50%,0)}
+#lanyard svg{width:100%;height:100%;overflow:visible;filter:drop-shadow(0 8px 10px rgba(0,0,0,.45))}
+#lanyard .zone{position:absolute;left:-14%;right:-14%;bottom:-16%;height:34%;border-radius:16px;border:3px dashed transparent;transition:.2s}
+#lanyard.on .zone{border-color:rgba(255,178,62,.9);background:rgba(255,178,62,.1);animation:want 1.2s ease-in-out infinite}
+#lanyard .zone.hot{border-style:solid;background:rgba(255,178,62,.25);transform:scale(1.08)}
+#lanyard b{position:absolute;left:50%;bottom:-24%;transform:translate(-50%,100%);white-space:nowrap;background:var(--lcd-bg);color:var(--amber);font:700 14px var(--sans);padding:5px 11px;border-radius:8px;border:1px solid #6b4a12}
 #pocket .idc{width:clamp(96px,8vw,124px);margin:0 auto 8px;box-shadow:0 14px 30px rgba(0,0,0,.5)}
 #pocket .idc b{font-size:clamp(11px,1vw,14px)}
 #pocket.held .idc{visibility:hidden}
@@ -203,7 +214,8 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
   border:2px solid var(--paper);box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:25;display:none;background:#000}
 #camPrev.show{display:block}
 #camPrev video,#camPrev canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
-#camPrev em{position:absolute;left:6px;bottom:4px;font-style:normal;font-size:11px;background:rgba(0,0,0,.6);padding:1px 6px;border-radius:6px;z-index:2}
+#camPrev em{position:absolute;left:6px;bottom:5px;font-style:normal;font:600 12px var(--sans);background:rgba(6,17,28,.8);color:#fff;padding:2px 8px;border-radius:7px;z-index:2}
+#camPrev.lost{border-color:var(--no)}#camPrev.lost em{background:var(--no)}
 #heard{position:fixed;left:50%;bottom:calc(5vh + 6px);transform:translateX(-50%);z-index:26;background:rgba(6,17,28,.85);
   border:1px solid #1d3a52;color:var(--lcd);font-family:var(--num);padding:5px 14px;border-radius:999px;font-size:clamp(12px,1.1vw,15px);
   opacity:0;transition:.25s;pointer-events:none;max-width:40vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -261,7 +273,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 @keyframes sw1{0%{opacity:1}50%{opacity:0}}@keyframes sw2{0%{opacity:0}50%{opacity:1}}
 
 /* ---------- dock (drop targets that are not in the picture) ---------- */
-#dock{position:fixed;left:50%;bottom:4.5vh;transform:translate(-50%,30px);display:flex;gap:16px;z-index:31;opacity:0;transition:.3s;pointer-events:none}
+#dock{position:fixed;left:50%;top:60vh;transform:translate(-50%,30px);display:flex;gap:16px;z-index:31;opacity:0;transition:.3s;pointer-events:none}
 #dock.on{opacity:1;transform:translate(-50%,0)}
 .dt{width:clamp(130px,11vw,168px);padding:14px 10px;border-radius:18px;background:rgba(6,17,28,.9);border:3px dashed #5a7a92;color:#eaf6ff;text-align:center;
   font-weight:700;font-size:clamp(13px,1.15vw,16px);transition:.15s}
@@ -419,13 +431,18 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
     </div>
   </header>
 
-  <div id="camPrev"><video id="vid" playsinline muted></video><canvas id="camc" width="320" height="240"></canvas><em>your hand</em></div>
+  <div id="camPrev"><video id="vid" playsinline muted></video><canvas id="camc" width="320" height="240"></canvas><em id="poseChip">Show your hand</em></div>
   <div id="heard"></div>
   <div id="banner"><div class="bf" id="bFloor">P</div><div class="bt"><b id="bTitle"></b><span id="bLine"></span></div></div>
   <div id="radio"><div class="av">S</div><div><div class="nm">SAM · SECURITY, ON THE RADIO</div><div class="tx"></div></div></div>
   <div id="lesson"><div class="ck">✓</div><div><b></b><span></span></div></div>
   <div id="prompt"><div class="pi"></div><div class="pt"><b></b><small></small><div class="pb"><s></s></div><div class="pbtns"></div></div></div>
   <div id="pocket"></div>
+  <div id="lanyard"><svg viewBox="0 0 140 320"><path d="M38 -20 L64 246" stroke="#163a63" stroke-width="17" stroke-linecap="round"/><path d="M102 -20 L76 246" stroke="#1f5a96" stroke-width="17" stroke-linecap="round"/>
+    <path d="M44 40 L52 120 M96 40 L88 120" stroke="rgba(255,255,255,.18)" stroke-width="4" stroke-linecap="round"/>
+    <rect x="54" y="238" width="32" height="24" rx="6" fill="#cfd8de" stroke="#14202b" stroke-width="3"/>
+    <path d="M61 262 v20 a9 9 0 0 0 18 0 v-20" fill="none" stroke="#14202b" stroke-width="9" stroke-linecap="round"/><path d="M61 262 v20 a9 9 0 0 0 18 0 v-20" fill="none" stroke="#b9c6cf" stroke-width="5" stroke-linecap="round"/></svg>
+    <div class="zone"></div><b>Clip it here</b></div>
   <div id="dock"></div>
   <button id="next" data-hit></button>
   <div id="ov"></div>
@@ -780,14 +797,19 @@ const Hand={lm:null,stream:null,on:false,lastVT:-1,aspect:4/3};
 const handLive=()=>HAND.on&&performance.now()-HAND.seen<450;
 const handPtr=()=>handLive()&&performance.now()-P.lastMouse>1200;
 
-addEventListener("pointermove",e=>{ if(!e.isPrimary)return; P.lastMouse=performance.now(); P.src="mouse"; P.x=e.clientX; P.y=e.clientY; emitPtr("move"); });
+let mAcc=0, mAccT=0;
+addEventListener("pointermove",e=>{ if(!e.isPrimary)return; const now=performance.now();
+  if(e.pointerType==="mouse"&&!P.down){
+    const mv=Math.abs(e.movementX||0)+Math.abs(e.movementY||0); if(mv<1)return;          // zero-movement events (layout changes)
+    if(handLive()&&P.src==="hand"){ if(now-mAccT>300)mAcc=0; mAcc+=mv; mAccT=now; if(mAcc<24)return; } }  // small brushes of the touchpad
+  P.lastMouse=now; P.src="mouse"; P.x=e.clientX; P.y=e.clientY; emitPtr("move"); });
 addEventListener("pointerdown",e=>{ if(!e.isPrimary)return; P.lastMouse=performance.now(); P.src="mouse"; P.x=e.clientX; P.y=e.clientY; P.down=true; ac();
   if(emitPtr("down")) e.preventDefault(); });
 addEventListener("pointerup",e=>{ if(!e.isPrimary)return; P.lastMouse=performance.now(); P.down=false; emitPtr("up"); });
 addEventListener("pointercancel",()=>{ P.down=false; emitPtr("up"); });
 
 /* camera (0..1, unmirrored) to screen; the middle of the camera frame covers the whole screen */
-const MX=.12, MY0=.08, MYH=.72;
+const MX=.12, MY0=.12, MYH=.56;
 function camToScr(x,y,clampIt=true){ let nx=((1-x)-MX)/(1-2*MX), ny=(y-MY0)/MYH; if(clampIt){nx=clamp(nx,0,1);ny=clamp(ny,0,1);} return {x:nx*innerWidth,y:ny*innerHeight}; }
 
 /* landmarks -> hand measurements. A = video aspect (width/height) so distances are not squashed */
@@ -800,17 +822,20 @@ function measure(lm,A=4/3){
   const pinchR=d(4,8)/hs;
   const thumbUp=count===0&&(Pt[2].y-Pt[4].y)>hs*.5&&Pt[4].y<Pt[6].y-hs*.05&&d(4,9)>hs*.55;
   const tipsIn=[8,12,16,20].every(t=>d(t,0)<hs*1.3);
-  const fist=count===0&&tipsIn&&!thumbUp;
+  const tipOut=d(8,0)>hs*1.0;                 // a pinching index finger reaches out; in a fist it folds into the palm
+  const pinchy=pinchR<.30&&tipOut&&!thumbUp;
+  const fist=count===0&&tipsIn&&!thumbUp&&!pinchy;
   const angle=Math.atan2(Pt[9].y-Pt[0].y,-(Pt[9].x-Pt[0].x));
   const palm={x:(lm[0].x+lm[5].x+lm[9].x+lm[13].x+lm[17].x)/5,y:(lm[0].y+lm[5].y+lm[9].y+lm[13].y+lm[17].y)/5};
-  return {tip:{x:lm[8].x,y:lm[8].y}, pinchPt:{x:(lm[4].x+lm[8].x)/2,y:(lm[4].y+lm[8].y)/2}, palm, hs, pinchR, ext, count, fist, thumbUp, angle, lm};
+  return {tip:{x:lm[8].x,y:lm[8].y}, pinchPt:{x:(lm[4].x+lm[8].x)/2,y:(lm[4].y+lm[8].y)/2}, palm, hs, pinchR, ext, count, fist, thumbUp, pinchy, angle, lm};
 }
 /* one tracked frame: update pose, finger count, pointer, swipes */
 function handFrame(m){
   const now=performance.now(); HAND.seen=now; HAND.m=m; HAND.on=true;
   const was=HAND.pinch;
-  if(!HAND.pinch&&m.pinchR<.30&&!m.fist&&!m.thumbUp) HAND.pinch=true;
-  else if(HAND.pinch&&(m.pinchR>.45||m.fist||m.thumbUp)) HAND.pinch=false;
+  /* pinch needs 2 frames to start and 3 frames to end, so a noisy frame never drops what you hold */
+  if(!HAND.pinch){ HAND.pIn=(m.pinchy&&!m.fist)?(HAND.pIn||0)+1:0; if(HAND.pIn>=2){ HAND.pinch=true; HAND.pOut=0; } }
+  else { const rel=m.pinchR>.45||m.thumbUp||(m.fist&&!m.pinchy); HAND.pOut=rel?(HAND.pOut||0)+1:0; if(HAND.pOut>=3||m.pinchR>.85){ HAND.pinch=false; HAND.pIn=0; } }
   const raw=m.thumbUp?"thumb":m.fist?"fist":HAND.pinch?"pinch":m.count===4?"open":(m.count===1&&m.ext[0])?"point":m.count>=2?"n"+m.count:"other";
   if(raw===HAND.cand)HAND.candN++; else {HAND.cand=raw;HAND.candN=1;}
   if(HAND.candN>=3||raw==="pinch")HAND.pose=raw;
@@ -854,10 +879,16 @@ function handClick(){ if(G.finger)return; const e=hitAt(P.x,P.y); if(e)activate(
 function activate(e){ if(G.paused&&!e.closest("#pz"))return; sfx("select"); e.click();
   const r=document.createElement("div"); r.style.cssText=`position:fixed;left:${P.x}px;top:${P.y}px;width:20px;height:20px;margin:-10px;border-radius:50%;border:3px solid #ffb23e;z-index:99;pointer-events:none;transition:.45s`;
   document.body.appendChild(r); requestAnimationFrame(()=>{r.style.transform="scale(4)";r.style.opacity="0";}); setTimeout(()=>r.remove(),500); }
+/* pose feedback on the camera preview */
+const POSENAME={point:"☝️ Point",pinch:"🤏 Pinch",open:"✋ Open hand",fist:"✊ Fist",thumb:"👍 Thumbs up",n2:"✌️ 2 fingers",n3:"3 fingers",other:"…"};
+onFrame(()=>{ if(!Hand.on)return; const live=handLive(), c=$("#poseChip"), cp=$("#camPrev"); cp.classList.toggle("lost",!live);
+  const t=live?(POSENAME[HAND.pose]||"…"):"Show your hand"; if(c.textContent!==t)c.textContent=t; },false);
 /* the ring cursor follows the hand */
 onFrame(()=>{ const show=handPtr()&&!G.finger; cursor.style.display=show?"block":"none";
   if(show){ cursor.style.transform=`translate(${P.x}px,${P.y}px)`; cursor.classList.toggle("down",P.down); } },false);
-setInterval(()=>{ if(HAND.on&&!handLive()){ if(HAND.pinch){HAND.pinch=false; if(P.src==="hand"){P.down=false;emitPtr("up");}} setHover(null); HAND.count=0; HAND.pose="none"; } },250);
+setInterval(()=>{ if(!HAND.on)return; const gap=performance.now()-HAND.seen;
+  if(gap>450){ setHover(null); HAND.count=0; HAND.pose="none"; }
+  if(gap>1100&&HAND.pinch){ HAND.pinch=false; HAND.pIn=0; if(P.src==="hand"){P.down=false;emitPtr("up");} } },250);
 
 /* ghost hand: the player's own hand drawn as a glowing skeleton at the cursor */
 const gcv=$("#ghost"), gx=gcv.getContext("2d");
@@ -971,7 +1002,7 @@ function dragTask(o){
       moveGhostEl(ghost,p.x-grab.dx*.5,p.y-grab.dy*.5,tilt,1.06);
       const z=zoneAt(p.x,p.y); zs.forEach(q=>{ const t=q.el||q.screen; if(t)t.classList.toggle("hot",q===z); }); }));
     offs.push(onPtr("up",p=>{ if(!grab)return false; release(p.x,p.y); return true; }));
-    offs.push(onFrame(()=>{ if(grab&&P.src==="hand"&&!handLive())release(-9999,-9999); }));
+    offs.push(onFrame(now=>{ if(grab&&P.src==="hand"&&now-HAND.seen>1100)release(-9999,-9999); }));
     async function flyBack(){ const r=o.item.rect(); await animGhost(ghost,r.left+r.width/2,r.top+r.height/2,1,320); ghost.el.remove(); ghost=null; o.item.show(); if(o.onCancel)o.onCancel(); }
     async function release(x,y){
       if(!grab)return; grab=null; const z=zoneAt(x,y); zs.forEach(q=>{const t=q.el||q.screen; if(t)t.classList.remove("hot");}); showZones(false);
@@ -1077,12 +1108,15 @@ const TASKS={
 
  /* Escalator: clip your badge on */
  async badgeOn(){
-  const pocket=$("#pocket"); pocket.innerHTML=idCard("STAFF")+"<span>Your ID card</span>"; pocket.classList.add("on");
-  setBadge("none");
-  await dragTask({ item:screenItem(pocket,".idc"), zones:[{id:"clip",ok:true,screen:$("#badge")}],
-    prompt:{icon:"pinch",hand:"Pinch your ID card and drag it up to the clip",handSub:"Top left, next to the floor sign",mouse:"Drag your ID card up to the clip",mouseSub:"Top left, next to the floor sign"},
-    success:async(z,g)=>{ const r=$("#badge").getBoundingClientRect(); await animGhost(g,r.left+r.width/2,r.top+r.height/2,r.width/g.w,320); g.el.remove();
-      setBadge("staff","snap"); sfx("clink"); pocket.classList.remove("on","held"); }, score:50 });
+  setBadge("none"); G.badge="staff";
+  const pocket=showPocket("Your ID card","50%",false); G.badge="none";
+  const lan=$("#lanyard"); lan.classList.add("on"); sfx("whoosh");
+  await dragTask({ item:screenItem(pocket,".idc"), zones:[{id:"clip",ok:true,screen:lan.querySelector(".zone")}],
+    prompt:{icon:"pinch",hand:"Pinch your ID card and lift it onto the lanyard clip",handSub:"Pinch, move up, then let go",mouse:"Drag your ID card up onto the lanyard clip"},
+    success:async(z,g)=>{ const c=lan.querySelector(".zone").getBoundingClientRect(); sfx("clink");
+      await animGhost(g,c.left+c.width/2,c.top+c.height*.2+g.h*.5,1,260);
+      lan.classList.remove("on"); const r=$("#badge").getBoundingClientRect(); await animGhost(g,r.left+r.width/2,r.top+r.height/2,r.width/g.w,520); g.el.remove();
+      setBadge("staff","snap"); sfx("clink"); hidePocket(); }, score:50 });
  },
 
  /* Reception: put the visitor log in the drawer */
@@ -1143,11 +1177,16 @@ const TASKS={
  /* Entrance: your card is gone -> report -> temporary card */
  async lostCard(){
   const E=GEO.entrance, lk=lockOn(E.reader,"Card reader");
-  const pr=prompt({icon:"pinch",hand:"Pinch your card in the top bar and drag it to the reader",mouse:"Drag your card from the top bar to the reader"});
+  const pocket=showPocket("Your card","17%"); await sleep(450);
+  const pr=prompt({icon:"pinch",hand:"Pinch your card and drag it to the reader",mouse:"Drag your card to the reader"});
   await new Promise(res=>{ const t0=performance.now(); let d=false; const fin=()=>{ if(d)return; d=true; offs.forEach(f=>f()); res(); };
-    const offs=[ onPtr("down",p=>{ if(G.mode!=="play")return false; if(inS(p.x,p.y,$("#badge").getBoundingClientRect(),p.src==="hand"?40:8)){ fin(); return true; } return false; }),
+    const offs=[ onPtr("down",p=>{ if(G.mode!=="play")return false; if(inS(p.x,p.y,pocket.getBoundingClientRect(),p.src==="hand"?30:6)){ fin(); return true; } return false; }),
       onFrame(now=>{ if(!G.paused&&now-t0>7000)fin(); }) ]; });
-  pr.hide(); setBadge("lost","shake"); sfx("bad"); lesson("Your ID card is gone","It was on you at the gates. It must have dropped somewhere.",true);
+  pr.hide(); sfx("bad");
+  const card=pocket.querySelector(".idc"); card.animate([{opacity:1,transform:"none"},{opacity:0,transform:"scale(.55) rotate(-14deg)"}],{duration:420,fill:"forwards"});
+  await sleep(380); pocket.innerHTML='<div class="idc gone"><b>?</b></div><span>Your card</span>';
+  setBadge("lost","shake"); lesson("Your ID card is gone","It was on you at the gates. It must have dropped somewhere.",true);
+  setTimeout(hidePocket,2600);
   await radio("Gone? It's not on my cameras either. What do you do?",3500); await sleep(500);
   await decide(DECISIONS.lostCard);
   await radio("Old card blocked. I've sent a temporary card to the door. Tap it.",5000);
@@ -1265,12 +1304,24 @@ const TASKS={
  async final(){ await decide(DECISIONS.breach,{final:true}); }
 };
 
+/* the card in your hand: comes out of the top bar into easy reach */
+function showPocket(label,x="50%",fromHud=true){
+  const pocket=$("#pocket"); pocket.style.setProperty("--px",x);
+  pocket.innerHTML=(G.badge==="temp"?idCard("TEMP","temp"):idCard("STAFF"))+`<span>${esc(label)}</span>`;
+  pocket.classList.remove("held"); pocket.classList.add("on");
+  if(fromHud){ $("#badge").classList.add("held"); const c=pocket.querySelector(".idc");
+    requestAnimationFrame(()=>{ const a=$("#badge").getBoundingClientRect(), b=c.getBoundingClientRect();
+      c.animate([{transform:`translate(${a.left+a.width/2-(b.left+b.width/2)}px,${a.top+a.height/2-(b.top+b.height/2)}px) scale(${a.width/b.width})`},{transform:"none"}],{duration:520,easing:"cubic-bezier(.2,.9,.3,1)"}); }); }
+  return pocket;
+}
+function hidePocket(){ const p=$("#pocket"); p.classList.remove("on","held"); }
 /* card reader tap (gates and floor 4) */
 async function tapReader(box,glows,label){
-  await dragTask({ item:screenItem($("#badge"),".idc"), zones:[{id:"reader",ok:true,world:padB(box,16),label:"Tap here"}], lockRect:box, label,
-    prompt:{icon:"pinch",hand:"Pinch your card in the top bar and tap it on the reader",mouse:"Drag your card from the top bar onto the reader"},
+  const pocket=showPocket("Your card","17%"); await sleep(450);
+  await dragTask({ item:screenItem(pocket,".idc"), zones:[{id:"reader",ok:true,world:padB(box,16),label:"Tap here"}], lockRect:box, label,
+    prompt:{icon:"pinch",hand:"Pinch your card and tap it on the reader",mouse:"Drag your card onto the reader"},
     success:async(z,g)=>{ const c=toS(...ctr(box)); await animGhost(g,c.x,c.y,.9,220); sfx("beep"); glows.forEach(b=>glow(b)); await sleep(380);
-      const r=$("#badge").getBoundingClientRect(); await animGhost(g,r.left+r.width/2,r.top+r.height/2,r.width/g.w,360); g.el.remove(); $("#badge").classList.remove("held"); },
+      const r=$("#badge").getBoundingClientRect(); await animGhost(g,r.left+r.width/2,r.top+r.height/2,r.width/g.w,420); g.el.remove(); hidePocket(); $("#badge").classList.remove("held"); },
     score:50 });
 }
 /* the side door swings shut */
@@ -1383,7 +1434,7 @@ function scanSweep(){ const f=$("#fx"), d=document.createElement("div");
 function newRun(){
   clearRun(); G.run++; G.scenes=SCENES; G.idx=0;
   Object.assign(G,{score:0,hints:MAX_HINTS,found:0,assessed:0,firstTry:0,hintsUsed:0,misses:[],q:null,entry:[],timeLeft:TIME_LIMIT,gest:{},finger:false,paused:false});
-  G.code=shuffle([1,2,3,4]); props.innerHTML=""; $("#fx").innerHTML=""; $("#drag").innerHTML=""; $("#dock").className=""; $("#pocket").className="";
+  G.code=shuffle([1,2,3,4]); props.innerHTML=""; $("#fx").innerHTML=""; $("#drag").innerHTML=""; $("#dock").className=""; $("#pocket").className=""; $("#lanyard").className="";
   hidePrompt(); hideRadio(); $("#lesson").classList.remove("on"); $("#next").classList.remove("on"); setBadge("none");
 }
 async function beginGame(){
@@ -1443,7 +1494,7 @@ async function escapeWin(){
 }
 function endGame(win){
   if(G.mode==="end")return; G.running=false; G.mode="end"; clearRun(); try{speechSynthesis.cancel();}catch(e){}
-  hidePrompt(); hideRadio(); $("#next").classList.remove("on"); $("#dock").className=""; $("#drag").innerHTML=""; $("#pocket").className="";
+  hidePrompt(); hideRadio(); $("#next").classList.remove("on"); $("#dock").className=""; $("#drag").innerHTML=""; $("#pocket").className=""; $("#lanyard").className="";
   const bonus=win?Math.round(G.timeLeft*2):0, total=G.score+bonus, n=Math.max(1,G.assessed), pass=win&&G.firstTry/n>=PASS_MARK, need=Math.ceil(n*PASS_MARK);
   const miss=G.misses.length?'<p class="q" style="margin-bottom:.8vh"><b>Worth a second look</b></p><div class="miss">'+G.misses.map(m=>`<div><b>${esc(m.title)}.</b> ${esc(m.why)}</div>`).join("")+'</div>'
     :(win?'<p class="q">No slips. Every call was right first time. Sam says thanks, and goes home.</p>':"");
