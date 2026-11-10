@@ -258,11 +258,11 @@ const MP_MODEL  = "https://storage.googleapis.com/mediapipe-models/hand_landmark
    ========================================================== */
 const SCENES = [
  { id:"parking", img:"parking", floor:"P", level:"Level 1", name:"Basement parking", zone:1, zoneName:"Arrival",
-   line:"You've just parked. Spot the privacy risks on your way in.", next:"Take the stairs up",
+   line:"7:45 pm. You came back for your charger. Security has just called a lockdown sweep.", next:"Take the stairs up",
    spots:[
-    { id:"colleague", label:"Colleague", cx:65.2, cy:58, w:8.5, h:31, q:{
+    { id:"colleague", label:"Colleague without her card", cx:65.2, cy:58, w:8.5, h:31, q:{
       title:"A colleague without her ID",
-      text:"A colleague you know asks you to badge her through the gates because she left her ID card at home. What do you do?",
+      text:"A colleague from Floor 2 catches up with you by the stairs. She left her ID card at home and asks you to badge her through the gates upstairs. What do you do?",
       opts:[
         {t:"Badge her in. She obviously works here.", ok:false, kw:["badge her","obviously"]},
         {t:"Send her to reception or security for a temporary pass.", ok:true, kw:["reception","temporary","security","pass"]},
@@ -270,17 +270,17 @@ const SCENES = [
       why:"Access cards are personal. A temporary pass keeps a record of who is in the building.", src:"General good practice – replace with course source"}}
    ]},
  { id:"escalator", img:"escalator", floor:"G", level:"Level 2", name:"Ground floor", zone:1, zoneName:"Arrival", auto:true,
-   line:"Take the escalator up to reception.", next:"",
+   line:"Ground floor is empty. The escalator is still running.", next:"",
    spots:[
     { id:"ride", label:"Ride the escalator", cx:48, cy:57, w:30, h:52, type:"tip",
-      tip:{title:"Wear it right", text:"Keep your ID card visible inside the building. Take it off and put it away outside: a badge on the street tells strangers who you work for.", btn:"Ride up"}}
+      tip:{title:"Wear it right", text:"You clip your ID card back on as you step onto the escalator. Inside the building it stays visible. Outside it goes in your pocket: a badge on the street tells strangers who you work for.", btn:"Ride up"}}
    ]},
  { id:"reception", img:"reception", floor:"1", level:"Level 3", name:"Reception", zone:1, zoneName:"Arrival",
-   line:"First floor. Visitors start here.", next:"Go to the security gates",
+   line:"Reception has gone home, but the day's paperwork hasn't.", next:"Walk to the gates",
    spots:[
     { id:"log", label:"Visitor log", cx:25, cy:87.5, w:17, h:19, q:{
       title:"The open visitor log",
-      text:"The visitor log lies open on the desk, showing every earlier visitor's name, company and phone number. What is wrong?",
+      text:"The visitor log lies open on the empty desk. Anyone walking past can read every visitor's name, company and phone number from today. What is wrong?",
       opts:[
         {t:"Nothing, it's only names.", ok:false, kw:["nothing","only names"]},
         {t:"Visitors can read other people's details. Collect only what's needed and keep earlier entries out of sight.", ok:true, kw:["read","details","out of sight","hide"]},
@@ -288,7 +288,7 @@ const SCENES = [
       why:"Visitor details are personal data. Collect only what you need, and don't let the next visitor read the last one's.", src:"General good practice – replace with course source"}},
     { id:"badges", label:"Visitor badges", cx:43, cy:87.5, w:19, h:18, q:{
       title:"Badge for a visitor in a hurry",
-      text:"A visitor says they have a meeting on Floor 4 and asks for a badge straight away. What comes first?",
+      text:"A tray of visitor badges sits unattended. Security said a badge went missing today. Tomorrow a visitor will ask for one in a hurry. What should always come first?",
       opts:[
         {t:"Hand over a badge. They look professional.", ok:false, kw:["professional","look"]},
         {t:"Check ID, confirm the host expects them, log the visit, then issue the badge.", ok:true, kw:["check","confirm","host","log"]},
@@ -296,11 +296,11 @@ const SCENES = [
       why:"Confirm who they are and who they're seeing before they get access. The log is your audit trail.", src:"General good practice – replace with course source"}}
    ]},
  { id:"gates", img:"gates", floor:"1", level:"Level 4", name:"Security gates", zone:1, zoneName:"Arrival", zoneEnd:true,
-   line:"ID card required beyond this point.", next:"Go to the lifts",
+   line:"The gates are the line between public and private. Something is wrong here.", next:"Head for the lifts",
    spots:[
-    { id:"sidedoor", label:"Side door", cx:84.7, cy:60, w:13, h:67, q:{
+    { id:"sidedoor", label:"Propped-open door", cx:84.7, cy:60, w:13, h:67, q:{
       title:"The propped-open side door",
-      text:"A side door next to the gates is propped open with a box, so people walk past without scanning a card. You…",
+      text:"The side door beside the gates is propped open with a box. Anyone, badge or not, could have walked in all afternoon. You…",
       opts:[
         {t:"Walk through. It's quicker.", ok:false, kw:["walk","quicker"]},
         {t:"Close it and tell security it was propped open.", ok:true, kw:["close","tell security","report"]},
@@ -308,11 +308,11 @@ const SCENES = [
       why:"A door held open bypasses access control. Close it if it's safe to, and report it.", src:"General good practice – replace with course source"}}
    ]},
  { id:"lifts", img:"lifts", floor:"1", level:"Level 5", name:"Lift lobby", zone:2, zoneName:"Access",
-   line:"Staff floors need a card.", next:"Ride up to Floor 4",
+   line:"Lift lobby. One lift is still open, and you are not alone.", next:"Ride up to Floor 4",
    spots:[
-    { id:"lift", label:"The open lift", cx:62.7, cy:52, w:10.5, h:46, q:{
+    { id:"lift", label:"Unescorted visitor", cx:62.7, cy:52, w:10.5, h:46, q:{
       title:"A visitor alone in the lift",
-      text:"A visitor with a badge steps in and presses Floor 4, a staff-only floor. Nobody is escorting them. What do you do?",
+      text:"A visitor with a badge steps into the lift ahead of you and presses Floor 4, a staff-only floor. Nobody is escorting them. What do you do?",
       opts:[
         {t:"Say nothing. They have a badge.", ok:false, kw:["nothing","badge"]},
         {t:"Ask who they're meeting, offer to call the host, and walk them back to reception.", ok:true, kw:["ask","host","reception","call"]},
@@ -320,19 +320,19 @@ const SCENES = [
       why:"Visitors must be escorted. A polite question protects the data on the floor without making it awkward.", src:"General good practice – replace with course source"}}
    ]},
  { id:"entrance", img:"entrance", floor:"4", level:"Level 6", name:"Floor 4 entrance", zone:2, zoneName:"Access", zoneEnd:true,
-   line:"Almost at your desk.", next:"Walk to your desk",
+   line:"Floor 4. The office door is right there, and your pocket feels light.", next:"Walk to your desk",
    spots:[
     { id:"reader", label:"ID reader", cx:87.2, cy:59.5, w:7.5, h:19, q:{
       title:"Where is my ID card?",
-      text:"You reach the door and can't find your ID card. It was in your bag this morning. What is the first thing to do?",
+      text:"You reach the office door, tap your pocket, and your ID card is not there. It was there at the escalator. What is the first thing to do?",
       opts:[
         {t:"Wait. It will probably turn up.", ok:false, kw:["wait","turn up"]},
         {t:"Report it to security or IT immediately so it can be blocked.", ok:true, kw:["report","security","block"]},
         {t:"Borrow a colleague's card for the day.", ok:false, kw:["borrow","colleague"]}],
       why:"A lost card works for whoever finds it. Report it straight away so it's deactivated.", src:"General good practice – replace with course source"}},
-    { id:"chat", label:"Loud conversation", cx:46.2, cy:58, w:9.5, h:25, q:{
+    { id:"chat", label:"Overheard details", cx:46.2, cy:58, w:9.5, h:25, q:{
       title:"Customer details out loud",
-      text:"Through the open lift door you hear two colleagues discussing a customer's full name and booking details out loud. What is the better habit?",
+      text:"Behind you, two colleagues waiting for the lift are discussing a customer's full name and booking details out loud. What is the better habit?",
       opts:[
         {t:"It's fine. Everyone here works for the company.", ok:false, kw:["fine","everyone"]},
         {t:"Move to a private room and share only what's needed.", ok:true, kw:["private","room","only what"]},
@@ -340,11 +340,11 @@ const SCENES = [
       why:"Customer data is shared on a need-to-know basis, and not where others can overhear it.", src:"General good practice – replace with course source"}}
    ]},
  { id:"desk", img:"desk", floor:"4", level:"Level 7", name:"Your desk", zone:3, zoneName:"Workspace",
-   line:"Every item here could be a risk.", next:"Join the meeting room",
+   line:"Your desk, exactly as you left it. That is the problem.", next:"Check the meeting room",
    spots:[
-    { id:"laptop", label:"Laptop", cx:30.7, cy:76.5, w:30, h:41, q:{
+    { id:"laptop", label:"Laptop still awake", cx:30.7, cy:76.5, w:30, h:41, q:{
       title:"The open laptop",
-      text:"Your laptop shows a client dashboard and you're heading to a quick meeting. What do you do?",
+      text:"Your laptop is still awake, showing the client dashboard you left open at 5 pm. Anyone on the floor could have read it. From now on, what do you do before stepping away?",
       opts:[
         {t:"Leave it open. You'll be back in five minutes.", ok:false, kw:["open","five minutes"]},
         {t:"Lock the screen every time you step away (Windows + L).", ok:true, kw:["lock"]},
@@ -358,9 +358,9 @@ const SCENES = [
         {t:"Your password", ok:true, kw:["password"]},
         {t:"'Team meeting at 3'", ok:false, kw:["meeting"]}],
       why:"Passwords never go on paper others can see. Use a password manager or a passphrase you remember.", src:"General good practice – replace with course source"}},
-    { id:"phone", label:"Desk phone", cx:75.5, cy:67.5, w:11.5, h:15, q:{
+    { id:"phone", label:"Ringing phone", cx:75.5, cy:67.5, w:11.5, h:15, q:{
       title:"The call from “IT”",
-      text:"The phone rings. The caller says they're from IT, it's urgent, and they need your password to fix your account. You…",
+      text:"Your desk phone rings. The caller says they're from IT, the lockdown is their fault, and they need your password to fix your account right now. You…",
       opts:[
         {t:"Give it. IT needs to fix the problem.", ok:false, kw:["give"]},
         {t:"Refuse, hang up and report the call through the official IT channel.", ok:true, kw:["refuse","hang up","report"]},
@@ -368,11 +368,11 @@ const SCENES = [
       why:"Real IT never asks for your password. Treat urgency as a red flag and report the attempt.", src:"General good practice – replace with course source"}}
    ]},
  { id:"meeting", img:"meeting", floor:"4", level:"Level 8", name:"Meeting room", zone:3, zoneName:"Workspace", zoneEnd:true,
-   line:"The meeting just ended. What was left behind?", next:"Go to the print station",
+   line:"The 5 pm meeting ended in a hurry. Half of it is still on the table.", next:"Go to the print station",
    spots:[
     { id:"board", label:"Whiteboard", cx:70.8, cy:43.5, w:19.5, h:28, q:{
       title:"The whiteboard",
-      text:"The meeting is over. The whiteboard still shows a strategy diagram and a customer list. You…",
+      text:"The whiteboard still shows the strategy diagram and a customer list from the 5 pm meeting. The cleaners come through at 9. You…",
       opts:[
         {t:"Leave it. The next team will wipe it.", ok:false, kw:["leave"]},
         {t:"Erase it fully before you leave.", ok:true, kw:["erase","wipe","clean"]},
@@ -380,7 +380,7 @@ const SCENES = [
       why:"Wipe boards before leaving, and don't copy business information to personal devices.", src:"General good practice – replace with course source"}},
     { id:"folder", label:"Finance Q3 folder", cx:56.1, cy:77, w:18.5, h:18, q:{
       title:"The Finance Q3 folder",
-      text:"A folder of unreleased Finance Q3 numbers lies on the table. How should you treat it?",
+      text:"A folder of unreleased Finance Q3 numbers lies open on the table. How should it have been treated?",
       opts:[
         {t:"Public. Leave it where it is.", ok:false, kw:["public"]},
         {t:"Confidential. Keep it with you or locked away, and share it on a need-to-know basis.", ok:true, kw:["confidential","locked","need"]},
@@ -388,11 +388,11 @@ const SCENES = [
       why:"Unreleased financials are confidential. Never leave them unattended, and share only with people who need them.", src:"General good practice – replace with course source"}}
    ]},
  { id:"printer", img:"printer", floor:"4", level:"Level 9", name:"Print station", zone:4, zoneName:"Print room", zoneEnd:true,
-   line:"Last zone before the lockdown.", next:"Enter the server room",
+   line:"Last zone. The printer is still warm.", next:"Enter the server room",
    spots:[
-    { id:"tray", label:"Printed pages", cx:63.6, cy:82, w:12.5, h:14, q:{
+    { id:"tray", label:"Forgotten printout", cx:63.6, cy:82, w:12.5, h:14, q:{
       title:"Pages in the tray",
-      text:"You print a contract and walk back to your desk. The pages sit in the tray. What should you have done?",
+      text:"A signed contract is sitting in the output tray. Someone printed it hours ago and never came back. What should they have done?",
       opts:[
         {t:"Nothing. It's a staff-only floor.", ok:false, kw:["nothing","staff-only"]},
         {t:"Collect it straight away, or use secure “follow-me” printing.", ok:true, kw:["collect","secure","follow"]},
@@ -400,15 +400,15 @@ const SCENES = [
       why:"Printouts left in trays are one of the easiest ways for information to leak.", src:"General good practice – replace with course source"}},
     { id:"shred", label:"Shredder", cx:77.7, cy:70, w:8, h:17, q:{
       title:"Old printouts",
-      text:"You have old printouts with customer names and phone numbers you no longer need. Where do they go?",
+      text:"Next to the printer is a pile of old printouts with customer names and phone numbers. Where do they go?",
       opts:[
         {t:"The normal waste bin.", ok:false, kw:["normal","waste","bin"]},
         {t:"The shredder or confidential-waste bin.", ok:true, kw:["shred","confidential"]},
         {t:"The recycling box by the window.", ok:false, kw:["recycl"]}],
       why:"Anything with personal data gets shredded, not binned or recycled loose.", src:"General good practice – replace with course source"}},
-    { id:"cabinet", label:"Cabinet", cx:93.5, cy:73, w:12.5, h:45, q:{
+    { id:"cabinet", label:"Unlocked HR cabinet", cx:93.5, cy:73, w:12.5, h:45, q:{
       title:"The key in the cabinet",
-      text:"The cabinet holding HR files is unlocked, with the key left in the lock. What now?",
+      text:"The cabinet holding HR files is unlocked, with the key still in the lock. What now?",
       opts:[
         {t:"Leave it. It's a quiet corner.", ok:false, kw:["leave","quiet"]},
         {t:"Lock it and give the key to its owner, or report it.", ok:true, kw:["lock","owner","report"]},
@@ -416,13 +416,14 @@ const SCENES = [
       why:"Keys belong with their named holder. Lock up and report it so nothing goes missing unnoticed.", src:"General good practice – replace with course source"}}
    ]},
  { id:"server", img:"server", floor:"4", level:"Final", name:"Server room", zone:5, zoneName:"Lockdown", final:true,
-   line:"Enter the 4-digit code from your top bar to escape.", next:"",
+   line:"Lockdown in moments. Enter the four digits you collected to send the all-clear.", next:"",
    spots:[ { id:"keypad", label:"Keypad", cx:47.7, cy:51.5, w:8.5, h:21, type:"keypad" } ]}
 ];
 
+const ZONE_MSG={1:"The entrance is secured: no stray visitor can wander in tonight.",2:"The lifts and the office door are covered. No one gets up here uninvited.",3:"Your desk and the meeting room are clean. Nothing left out for the morning.",4:"The print room is cleared. Nothing left in a tray or an open cabinet."};
 const FINAL_Q = {
   title:"Final check",
-  text:"Say it out loud: if you suspect a data breach, you should ______ it immediately.",
+  text:"The lock clicks open. Security comes on the radio: \"One last check before we lift the lockdown. If you ever suspect a data breach, what do you do first?\" Say it out loud.",
   opts:[
     {t:"Report it", ok:true, kw:["report","notify","inform","escalate","alert","tell"]},
     {t:"Delete the evidence", ok:false, kw:["delete"]},
@@ -631,7 +632,7 @@ function openTip(sp){
 function openDigit(S){
   const d=G.code[G.found]; G.found++; sfx("unlock"); updateHud();
   openOv(bar("Zone "+S.zone+" cleared: "+S.zoneName,"Code digit "+G.found+" of 4")+
-    '<p class="q">You earned a digit of the server room code. It is saved in the top bar.</p>'+
+    '<p class="q">'+esc(ZONE_MSG[S.zone]||"Zone secured.")+' Security sends you a digit of the all-clear code. It is saved in the top bar.</p>'+
     '<div class="digit">'+d+'</div><button class="btn big" data-hit data-act="digitok">'+esc(S.next)+'</button>',"digit",true);
   speak("Zone cleared. Code digit "+G.found+" is "+d);
 }
@@ -641,7 +642,7 @@ function openKeypad(){
   G.entry=[];
   const keys=[1,2,3,4,5,6,7,8,9].map(n=>'<button class="opt" data-hit data-act="key" data-d="'+n+'">'+n+'</button>').join("")+
     '<button class="opt" data-hit data-act="kclear">Clear</button><button class="opt" data-hit data-act="key" data-d="0">0</button><button class="opt" data-hit data-act="kclose">Back</button>';
-  openOv(bar("Server room keypad","Final")+'<p class="kmsg">Enter the 4 digits from your top bar. Tap them, type them, or say them out loud: “four, seven, one, nine”.</p>'+
+  openOv(bar("Server room keypad","Final")+'<p class="kmsg">Enter the four digits from your top bar to send the all-clear. Tap them, type them, or say them out loud: “four, seven, one, nine”.</p>'+
     '<div class="kdisp" id="kdisp"><span></span><span></span><span></span><span></span></div><div class="kpad">'+keys+'</div>',"keypad");
   dispKeys();
 }
@@ -654,7 +655,7 @@ function checkCode(){
   if(G.mode!=="keypad")return;
   if(G.entry.join("")===G.code.join("")){
     sfx("unlock"); closeOv(); G.mode="play"; ledGreen();
-    $("#bTitle").textContent="Access granted"; $("#bLine").textContent="The lock is open. One last check."; $("#bFloor").textContent="✓";
+    $("#bTitle").textContent="Code accepted"; $("#bLine").textContent="The lock releases. Security is calling."; $("#bFloor").textContent="✓";
     $("#banner").classList.add("on"); setTimeout(()=>$("#banner").classList.remove("on"),2400);
     setTimeout(()=>openQuestion(G.scenes[G.idx].spots[0],FINAL_Q,"Final check"),1700);
   } else {
@@ -679,9 +680,9 @@ function endGame(win){
   const pass=win&&(G.firstTry/n>=PASS_MARK);
   const need=Math.ceil(n*PASS_MARK);
   const miss=G.misses.length? '<p class="q" style="margin-bottom:.8vh"><b>Worth a second look</b></p><div class="miss">'+G.misses.map(m=>'<div><b>'+esc(m.title)+'.</b> '+esc(m.why)+'</div>').join("")+'</div>'
-    : (win?'<p class="q">No slips. Every answer was right first time.</p>':"");
-  const head= win? (pass?"You secured the office":"You escaped, but revisit the course") : "Time's up: you're locked in";
-  const sub = win? (pass?"Pass: "+G.firstTry+" of "+n+" right first time.":"Pass mark is "+need+" of "+n+" right first time. You got "+G.firstTry+".") : "You found "+G.found+" of 4 code digits and answered "+G.asked+" of "+n+" questions.";
+    : (win?'<p class="q">No slips. Every risk fixed first time. Security says thanks, and goes home.</p>':"");
+  const head= win? (pass?"All clear. The doors open.":"The doors open, but revisit the course") : "Lockdown engaged. You're in for the night.";
+  const sub = win? (pass?"Pass: "+G.firstTry+" of "+n+" right first time.":"Pass mark is "+need+" of "+n+" right first time. You got "+G.firstTry+".") : "The floor sealed before you sent the all-clear. You found "+G.found+" of 4 code digits and fixed "+G.asked+" of "+n+" risks.";
   openOv(bar(win?"Escaped":"Locked in","Result")+'<h2>'+esc(head)+'</h2><p class="q">'+esc(sub)+'</p>'+
     '<div class="stats"><div><b>'+fmt(G.timeLeft)+'</b><span>time left</span></div><div><b>'+total+'</b><span>score'+(win?" (incl. time bonus)":"")+'</span></div>'+
     '<div><b>'+G.firstTry+'/'+n+'</b><span>right first time</span></div><div><b>'+G.hintsUsed+'</b><span>hints used</span></div></div>'+miss+
@@ -713,13 +714,13 @@ function renderIntro(step,note){
   const tg=(id,on,txt)=>'<button class="tg'+(on?" on":"")+'" data-hit data-act="'+id+'">'+txt+'</button>';
   if(step==="ready"){
     openOv(bar("Lock down the office","Ready")+'<h2>Show me your hand</h2>'+
-      '<p class="q">'+esc(note||"Point your index finger at Start. Pinch your thumb and finger to click, or just hold still for a moment.")+'</p>'+
+      '<p class="q">'+esc(note||"Point your index finger at Start. Pinch your thumb and finger to click, or just hold still for a moment.")+'</p><p class="q" style="color:#44586b">Security is on the radio: “Sweep starts when you do. Ten minutes on the clock.”</p>'+
       '<button class="btn big" data-hit data-act="start">Start</button><div class="status" id="st"></div>',"intro",true);
     return;
   }
   openOv(bar("Lock down the office","Data privacy escape room")+
-    '<h2>You\'re locked in after hours</h2>'+
-    '<p class="q">Fix the privacy risks on your way to your desk. Each cleared zone gives you a digit of the server room code. Escape before the clock runs out.</p>'+
+    '<h2>7:45 pm. You came back for your charger.</h2>'+
+    '<p class="q">A visitor badge went missing today, so Security is sealing the building in ten minutes. You are the only one still inside. Fix every privacy risk between the car park and your desk, collect the four-digit all-clear code, and send it from the server room before the doors lock for the night.</p>'+
     '<div class="rows"><div><b>☝</b>Move your index finger to steer the ring</div><div><b>🤏</b>Pinch to click, or hold still for 1.5 seconds</div>'+
     '<div><b>✋</b>Open palm held up: use a hint</div><div><b>🎤</b>Say “A”, “B”, “C”, “hint”, “repeat”, “pause”, “next”</div></div>'+
     '<div class="toggles">'+tg("tgTts",G.tts,"🔊 Read questions aloud")+tg("tgDwell",G.dwell,"⏱ Hold still to click")+'</div>'+
