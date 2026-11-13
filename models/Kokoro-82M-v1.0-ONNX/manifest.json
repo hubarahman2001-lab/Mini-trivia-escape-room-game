@@ -1,0 +1,190 @@
+{
+  "model": "onnx-community/Kokoro-82M-v1.0-ONNX",
+  "license": "Apache-2.0",
+  "about": "Copy of the Kokoro-82M v1.0 ONNX model for the game's voice. The two model files are split into parts because GitHub refuses files over 100 MB; voice-worker.js joins them while downloading.",
+  "split": {
+    "onnx/model.onnx": {
+      "size": 325532232,
+      "sha256": "8fbea51ea711f2af382e88c833d9e288c6dc82ce5e98421ea61c058ce21a34cb",
+      "parts": [
+        {
+          "file": "onnx/model.onnx.part0",
+          "size": 47185920,
+          "sha256": "39f3bc3b38bafb551b19e8a4367644a694cd2759e3bcd8627c806bda184323c4"
+        },
+        {
+          "file": "onnx/model.onnx.part1",
+          "size": 47185920,
+          "sha256": "c45b347f8ac67f4420fb184603c6ba86312f3b52eb326763c39036163245b01a"
+        },
+        {
+          "file": "onnx/model.onnx.part2",
+          "size": 47185920,
+          "sha256": "ae0731a385dac2fe393265fb3b788fdc5148c355877744e43298877cebe23770"
+        },
+        {
+          "file": "onnx/model.onnx.part3",
+          "size": 47185920,
+          "sha256": "c5630b8594be133cde1ca4e234b2a948cfcdde384a8acb093b67bd9bbaf491ac"
+        },
+        {
+          "file": "onnx/model.onnx.part4",
+          "size": 47185920,
+          "sha256": "8a894e29fa82bf6cfec0dec14899939787f5971b3b43bf50f41d14196ed66b93"
+        },
+        {
+          "file": "onnx/model.onnx.part5",
+          "size": 47185920,
+          "sha256": "c71fa75afe4d0d0c2288807587bf7a8a448d4daf761190c99908c55848a85fc8"
+        },
+        {
+          "file": "onnx/model.onnx.part6",
+          "size": 42416712,
+          "sha256": "72ec462d4811ded817d77cd4260a2997cffbbaa6a9aa98857670a3cf3118ea34"
+        }
+      ]
+    },
+    "onnx/model_quantized.onnx": {
+      "size": 92361116,
+      "sha256": "fbae9257e1e05ffc727e951ef9b9c98418e6d79f1c9b6b13bd59f5c9028a1478",
+      "parts": [
+        {
+          "file": "onnx/model_quantized.onnx.part0",
+          "size": 47185920,
+          "sha256": "2ae6ef0cb673a32991722871743a26bfef11e1c10c857e4b02610bfa22fb5cdf"
+        },
+        {
+          "file": "onnx/model_quantized.onnx.part1",
+          "size": 45175196,
+          "sha256": "e98ee4a8b797bfbf68c3de15aa4da278b7b6e036067114315233a8de48c7d40e"
+        }
+      ]
+    }
+  },
+  "files": {
+    "config.json": {
+      "size": 44,
+      "sha256": "df34b4f930b23447cd4dc410fabfb42eb3f24e803e6c3f97d618fb359380a36f"
+    },
+    "tokenizer.json": {
+      "size": 3090,
+      "sha256": "d028576fe43404f21c4791addc9a0bf3a72ff5a65dfd01df743b565975ac3e0e"
+    },
+    "tokenizer_config.json": {
+      "size": 113,
+      "sha256": "be1cb066d6ef6b074b3f15e6a6dd21ac88ff3cdaedf325f0aaed686c70f75d20"
+    },
+    "voices/af_alloy.bin": {
+      "size": 522240,
+      "sha256": "c4a6b876047fd7fb472edf4ebd63cfac7c3b958a7cae7c106e8f038ca6308c45"
+    },
+    "voices/af_aoede.bin": {
+      "size": 522240,
+      "sha256": "4a004c33430762e2461eedb2013fad808ef4ab3121f5300f554476caf58d8361"
+    },
+    "voices/af_bella.bin": {
+      "size": 522240,
+      "sha256": "f69d836209b78eb8c66e75e3cda491e26ea838a3674257e9d4e5703cbaf55c8b"
+    },
+    "voices/af_heart.bin": {
+      "size": 522240,
+      "sha256": "d583ccff3cdca2f7fae535cb998ac07e9fcb90f09737b9a41fa2734ec44a8f0b"
+    },
+    "voices/af_jessica.bin": {
+      "size": 522240,
+      "sha256": "a240a5e3c15b43563d6e923bdca8ef5613a23471d9b77653694012435df23bd8"
+    },
+    "voices/af_kore.bin": {
+      "size": 522240,
+      "sha256": "9be5221b6a941c04b561959b8ff0b06e809444dcc4ab7e75a7b23606f691819e"
+    },
+    "voices/af_nicole.bin": {
+      "size": 522240,
+      "sha256": "cd2191ab31b914ed7b318416b0e4440fdf392ddad9106a060819aa600a64f59a"
+    },
+    "voices/af_nova.bin": {
+      "size": 522240,
+      "sha256": "18778272caa0d0eebaea251c35fd635f038434f9eee5e691d02a174bd328414f"
+    },
+    "voices/af_river.bin": {
+      "size": 522240,
+      "sha256": "00a2bcf82b1d86e8f19902ede58c65ccf6c0e43b44b7d74fad54e5d8933c9c30"
+    },
+    "voices/af_sarah.bin": {
+      "size": 522240,
+      "sha256": "4409fbc125afabacc615d94db5398d847006a737b0247d6892b7a9a0007a2f0a"
+    },
+    "voices/af_sky.bin": {
+      "size": 522240,
+      "sha256": "4435255c9744f3f31659e0d714ab7689bf65d9e77ec1cce060f083912614f0b9"
+    },
+    "voices/am_adam.bin": {
+      "size": 522240,
+      "sha256": "162b035ed91cfc48b6046982184c645f72edcdd1b82843347f605d7bf7b15716"
+    },
+    "voices/am_echo.bin": {
+      "size": 522240,
+      "sha256": "3968b92c3c4cd1c4416dbded36c13eaa388a90d5788d02a13e4d781f5f8cf3c3"
+    },
+    "voices/am_eric.bin": {
+      "size": 522240,
+      "sha256": "e8b5be17edd1e3636901ce7598baafe2dc8dd8ff707a0c23bf9e461add7e2832"
+    },
+    "voices/am_fenrir.bin": {
+      "size": 522240,
+      "sha256": "c27989f741f7ee34d273a39d8a595cc0837d35f5ced9a29b7cc162614616df43"
+    },
+    "voices/am_liam.bin": {
+      "size": 522240,
+      "sha256": "52403be32fd047c6a44517cb0bcd6b134f2a18baa73e70ef41651e0eab921ade"
+    },
+    "voices/am_michael.bin": {
+      "size": 522240,
+      "sha256": "1d1f21dd8da39c30705cd4c75d039d265e9bc4a2a93ed09bc9e1b1225eb95ba1"
+    },
+    "voices/am_onyx.bin": {
+      "size": 522240,
+      "sha256": "da5d135b424164916d75a68ffb4c2abce3d7d5ccc82dd1ee6cf447ce286145e6"
+    },
+    "voices/am_puck.bin": {
+      "size": 522240,
+      "sha256": "fcf73c989033e9233e0b98713eca600c8c74dcc1614b37009d5450ff4a2274a0"
+    },
+    "voices/am_santa.bin": {
+      "size": 522240,
+      "sha256": "61150cf726ab6c5ed7a99f90a304f91f5a72c00c592e89ec94e5df11c319227a"
+    },
+    "voices/bf_alice.bin": {
+      "size": 522240,
+      "sha256": "08afa6ba24da61ea5e8efa139e5aadc938d83f0a6da5a900adaf763ac1da5573"
+    },
+    "voices/bf_emma.bin": {
+      "size": 522240,
+      "sha256": "669fe0647f9dd04fcab92f1439a40eeb4c8b4ab1f82e4996fe3d918ce4a63b73"
+    },
+    "voices/bf_isabella.bin": {
+      "size": 522240,
+      "sha256": "3754352c4aaa46d17f27654ab7518d65b62ad6163a0f55a5f4330c2da2c4e94f"
+    },
+    "voices/bf_lily.bin": {
+      "size": 522240,
+      "sha256": "5e0ee32ebe64a467124976b14e69590746f1c4ce41a12b587a50c862edfea335"
+    },
+    "voices/bm_daniel.bin": {
+      "size": 522240,
+      "sha256": "6b3194bbceffb746733cbc22c8f593dd44e401a71d53895a2dca891bc595a1e8"
+    },
+    "voices/bm_fable.bin": {
+      "size": 522240,
+      "sha256": "f889083196807b4adb15e9204252165f503b8d33d3982e681c52443c49d798f1"
+    },
+    "voices/bm_george.bin": {
+      "size": 522240,
+      "sha256": "c4b235a4c1f2cd3b939fed08b899ce9385638b763f7b73a59616c4fc9bd6c9bc"
+    },
+    "voices/bm_lewis.bin": {
+      "size": 522240,
+      "sha256": "b8f671cef828c30e66fdf0b0756a76bba58f6bb3398cbbf27058642acbcedb97"
+    }
+  }
+}
