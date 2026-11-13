@@ -4,6 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Lock Down the Office – Data Privacy Escape</title>
+<script>
+  /* Voice settings. Every option is listed at the top of voice-engine.js. */
+  window.VOICE_CONFIG = {
+    VOICE_MAP: { sam: "am_michael", narrator: "af_heart" },  // Sam on the radio, and the voice that reads questions
+    MODEL_BASE_URL: "models/Kokoro-82M-v1.0-ONNX/"   // the model copy hosted with the game (null = download from huggingface.co)
+  };
+</script>
+<script src="voice-engine.js" defer></script>
 <style>
 /* ==========================================================
    LOOK & FEEL – building wayfinding: light sign panels,
@@ -105,6 +113,14 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .lockscreen .d{font-size:20px;opacity:.85}
 .lockscreen .pl{margin-top:12px;font:600 20px var(--sans);display:flex;gap:10px;align-items:center;background:rgba(255,255,255,.14);padding:6px 16px;border-radius:999px}
 .wipe{left:0;top:0}
+.ping{width:0;height:0}
+.ping::before{content:"";position:absolute;left:-46px;top:-46px;width:92px;height:92px;border-radius:50%;border:4px solid var(--ok);animation:pingo .9s ease-out forwards}
+.ping.no::before{border-color:var(--no)}
+.ping.no::after{content:"✕";position:absolute;left:-14px;top:-20px;font:900 28px var(--sans);color:var(--no);text-shadow:0 2px 6px rgba(0,0,0,.5);animation:pingo .9s ease-out forwards}
+@keyframes pingo{from{transform:scale(.3);opacity:1}to{transform:scale(1.4);opacity:0}}
+.lock.hintm{--c:#c9a7ff}
+.lock.hintm b{left:50%;transform:translateX(-50%);font-size:20px}
+.eraser{border-radius:50%;border:3px dashed rgba(255,255,255,.95);background:rgba(123,233,255,.18);box-shadow:0 0 18px rgba(123,233,255,.6);pointer-events:none}
 .waves{width:0;height:0;--s:1}
 .waves i{position:absolute;left:-60px;top:-60px;width:120px;height:120px;border:4px solid rgba(255,90,95,.85);border-radius:50%;animation:wave 1.5s ease-out infinite;scale:var(--s)}
 .waves i:nth-child(2){animation-delay:.5s}.waves i:nth-child(3){animation-delay:1s}
@@ -167,6 +183,8 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .tb{width:clamp(34px,3vw,42px);border-radius:10px;background:var(--paper);color:var(--ink);font-size:clamp(15px,1.4vw,19px);
   display:grid;place-items:center;box-shadow:0 6px 18px rgba(0,0,0,.4);position:relative;transition:.15s}
 .tb:hover,.tb.hov{background:#fff;box-shadow:0 0 0 3px var(--amber)}
+button.stat{cursor:pointer;transition:box-shadow .15s}
+button.stat:hover,button.stat.hov{box-shadow:0 0 0 3px var(--amber),inset 0 0 18px rgba(0,0,0,.65)}
 .tb.off{opacity:.55}.tb.off::after{content:"";position:absolute;left:18%;right:18%;top:50%;height:2px;background:var(--no);transform:rotate(-35deg)}
 
 /* ID card (HUD slot, pocket, ghosts) */
@@ -210,7 +228,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 #pocket span{display:inline-block;background:var(--lcd-bg);color:var(--lcd);font:600 14px var(--num);padding:5px 12px;border-radius:999px;border:1px solid #1d3a52}
 
 /* ---------- camera preview, heard caption ---------- */
-#camPrev{position:fixed;left:16px;bottom:16px;width:clamp(120px,11vw,168px);aspect-ratio:4/3;border-radius:12px;overflow:hidden;
+#camPrev{position:fixed;left:16px;bottom:16px;width:clamp(150px,13vw,210px);aspect-ratio:4/3;border-radius:12px;overflow:hidden;
   border:2px solid var(--paper);box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:25;display:none;background:#000}
 #camPrev.show{display:block}
 #camPrev video,#camPrev canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
@@ -235,7 +253,17 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 #radio.on{opacity:1;transform:none}
 #radio.away{opacity:0!important}
 #radio .av{flex:none;width:clamp(38px,3.6vw,52px);height:clamp(38px,3.6vw,52px);border-radius:50%;display:grid;place-items:center;
-  background:var(--amber);color:#2a1a00;font:800 clamp(18px,1.8vw,26px) var(--sans);box-shadow:0 0 0 3px rgba(255,178,62,.25)}
+  background:var(--amber);color:#2a1a00;font:800 clamp(18px,1.8vw,26px) var(--sans);
+  box-shadow:0 0 0 calc(3px + var(--lv,0) * 12px) rgba(255,178,62,calc(.25 + var(--lv,0) * .45));transition:box-shadow .06s linear}
+.vbadge{display:inline-flex;align-items:center;gap:.45em;border-radius:999px;padding:.35em .9em;font:600 clamp(12px,1.15vw,15px) var(--sans);background:#d6e0e8;color:var(--ink)}
+.vbadge::before{content:"";width:.6em;height:.6em;border-radius:50%;background:#7d93a6}
+.vbadge.load::before{background:var(--amber);animation:blink 1s steps(2) infinite}
+.vbadge.ok::before{background:var(--ok)}
+.vbadge.err::before{background:var(--no)}
+.vsel{display:inline-flex;align-items:center;gap:.5em;font:600 clamp(12px,1.15vw,15px) var(--sans);color:var(--ink)}
+.vsel select{font:inherit;border:2px solid #b6c6d3;border-radius:999px;padding:.25em .7em;background:#fff;color:var(--ink)}
+#vtag{position:fixed;right:16px;top:calc(clamp(60px,6vw,76px) + 14px);z-index:26;opacity:0;transition:opacity .4s;pointer-events:none}
+#vtag.on{opacity:1}
 #radio .nm{font-size:clamp(11px,1vw,13px);color:var(--lcd);font-family:var(--num);margin-bottom:3px;opacity:.85}
 #radio .tx{font-size:clamp(14px,1.4vw,19px);line-height:1.4;color:#eaf6ff;min-height:2.8em}
 #lesson{position:fixed;right:16px;top:calc(clamp(60px,6vw,76px) + 14px);transform:translateY(-12px);z-index:29;display:flex;gap:12px;align-items:flex-start;
@@ -315,6 +343,11 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .card h2{font-size:clamp(24px,3vw,42px);line-height:1.05;margin-bottom:.4em}
 .card p.q{font-size:clamp(16px,1.65vw,23px);line-height:1.38;margin-bottom:1.3vh;max-width:62ch}
 .opts{display:grid;gap:1.1vh;margin-bottom:1.4vh}
+.opts.three{grid-template-columns:repeat(3,1fr);gap:1.2vw}
+.opt.tile{flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:.7em;min-height:clamp(140px,24vh,240px);padding:1em 1.1em;
+  background:linear-gradient(0deg,rgba(255,178,62,.38) calc(var(--p)*100%),#fff calc(var(--p)*100%))}
+.opt.tile:hover,.opt.tile.hov{transform:translateY(-4px)}
+@media (max-width:820px){.opts.three{grid-template-columns:1fr}.opt.tile{min-height:0;flex-direction:row;align-items:center}}
 .opt{--p:0;display:flex;align-items:center;gap:1.1em;text-align:left;width:100%;padding:.7em 1em .7em .7em;border-radius:16px;border:2px solid #cfdbe4;
   font-size:clamp(14px,1.45vw,20px);line-height:1.3;transition:border-color .14s,transform .14s,box-shadow .14s;
   background:linear-gradient(90deg,rgba(255,178,62,.32) calc(var(--p)*100%),#fff calc(var(--p)*100%))}
@@ -358,7 +391,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .tg.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 .tg:hover,.tg.hov{box-shadow:0 0 0 3px var(--amber)}
 .status{font-size:clamp(12px,1.15vw,15px);color:#44586b;margin-top:1vh;min-height:1.4em}
-.tiles{display:grid;grid-template-columns:repeat(5,1fr);gap:1vw;margin:1.4vh 0 2vh}
+.tiles{display:grid;grid-template-columns:repeat(6,1fr);gap:.9vw;margin:1.4vh 0 2vh}
 .tile{background:#fff;border:2px solid #cfdbe4;border-radius:16px;padding:14px 6px 12px;text-align:center;transition:.25s;position:relative}
 .tile i{display:block;font-style:normal;font-size:clamp(30px,3.2vw,46px);line-height:1.15}
 .tile b{display:block;font-size:clamp(13px,1.2vw,17px);margin-top:4px}
@@ -379,6 +412,10 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .reader .rt small{font-size:clamp(12px,1.15vw,15px);color:#44586b}
 .kpad{display:grid;grid-template-columns:repeat(5,1fr);gap:1vh;max-width:min(560px,82vw);margin:0 auto 1vh}
 .kpad .opt{justify-content:center;padding:.45em;font:700 clamp(20px,2.3vw,32px) var(--num);border-radius:14px}
+.kpad.four{grid-template-columns:repeat(4,1fr);gap:1.4vw;max-width:min(660px,88vw);margin-bottom:1.6vh}
+.kpad.four .opt.key{min-height:clamp(96px,17vh,150px);font-size:clamp(40px,5vw,68px);background:linear-gradient(0deg,rgba(255,178,62,.38) calc(var(--p)*100%),#fff calc(var(--p)*100%))}
+.kpad .opt.key.pressed{animation:keyp .3s}
+@keyframes keyp{50%{transform:scale(.92);background:#ffe3b0}}
 .kmsg{text-align:center;color:#44586b;font-size:clamp(13px,1.3vw,18px);margin-bottom:.8vh}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1vw;margin:1.4vh 0}
 .stats div{background:#fff;border:2px solid #cfdbe4;border-radius:14px;padding:.7em .5em;text-align:center}
@@ -421,7 +458,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
     <div class="grp r">
       <div class="lcd code" id="code" title="All-clear code"><span>–</span><span>–</span><span>–</span><span>–</span></div>
       <div class="lcd stat" title="Score">★ <b id="score">0</b></div>
-      <div class="lcd stat" title="Hints left">💡 <b id="hints">3</b></div>
+      <button class="lcd stat" id="bHint" data-hit data-nodwell title="Use a hint (H, or hold up a peace sign)">💡 <b id="hints">3</b></button>
       <div class="tools">
         <button class="tb" id="bTts" data-hit data-nodwell title="Read aloud">🔊</button>
         <button class="tb" id="bMic" data-hit data-nodwell title="Voice control">🎤</button>
@@ -433,6 +470,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 
   <div id="camPrev"><video id="vid" playsinline muted></video><canvas id="camc" width="320" height="240"></canvas><em id="poseChip">Show your hand</em></div>
   <div id="heard"></div>
+  <div id="vtag"><span class="vbadge"></span></div>
   <div id="banner"><div class="bf" id="bFloor">P</div><div class="bt"><b id="bTitle"></b><span id="bLine"></span></div></div>
   <div id="radio"><div class="av">S</div><div><div class="nm">SAM · SECURITY, ON THE RADIO</div><div class="tx"></div></div></div>
   <div id="lesson"><div class="ck">✓</div><div><b></b><span></span></div></div>
@@ -465,11 +503,14 @@ const ASSETS={"note_sprite": {"uri": "data:image/webp;base64,UklGRgwPAABXRUJQVlA
 /* ==========================================================
    1.  SETTINGS YOU MAY WANT TO CHANGE
    ========================================================== */
-const TIME_LIMIT    = 600;   // seconds for the whole run
+const TIME_LIMIT    = 900;   // seconds for the whole run
 const WRONG_PENALTY = 10;    // seconds lost for every wrong choice
 const MAX_HINTS     = 3;     // hints per run (a hint crosses out one wrong answer)
 const DWELL_MS      = 1400;  // hold your finger still this long on a button to press it
 const PASS_MARK     = 0.8;   // share of choices right on the first try
+const DECOY_PENALTY = 5;     // seconds lost for pinching something that isn't a risk
+const VAGUE_MS      = 25000; // after this long, a found risk shows exactly which move to use
+const FREE_NUDGE_MS = 45000; // stuck this long finding risks: Sam gives a free nudge
 const MP_BASE  = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/";
 const MP_MODEL = "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
 
@@ -509,7 +550,7 @@ const DECISIONS = {
           {t:"Give them only half of it.",ok:false,kw:["half"]}],
     why:"Real IT never asks for your password. Urgency is a red flag: report the call.", src:"General good practice – replace with course source"},
   breach:{ title:"Final check",
-    text:"Sam: “One last check before I lift the lockdown. If you ever suspect a data breach, what do you do first?” Say it out loud, or pick it with your fingers.",
+    text:"Sam: “One last check before I lift the lockdown. If you ever suspect a data breach, what do you do first?” Say it out loud, or point and pinch.",
     opts:[{t:"Report it straight away",ok:true,kw:["report","notify","inform","escalate","alert","tell"]},
           {t:"Delete the evidence",ok:false,kw:["delete"]},
           {t:"Wait and see",ok:false,kw:["wait"]}],
@@ -527,7 +568,7 @@ const SCENES = [
  { id:"parking", img:"parking", floor:"P", level:"Level 1", name:"Car park", zone:1, zoneName:"Arrival",
    line:"7:45 pm. You came back for your charger.", next:"Take the stairs up",
    beats:[
-    { say:"Sam here, Security. A visitor badge went missing today, so I'm sealing the building in ten minutes. Your hands are your tools tonight. Heads up: someone's coming over.",
+    { say:"Sam here, Security. A visitor badge went missing today, so I'm sealing the building. Your hands are your tools tonight. Heads up: someone's coming over.",
       task:"tailgater", lesson:["Cards are personal","A forgotten card means a temporary pass from Security, never someone else's badge."] } ],
    outro:"Good call. She's on her way to the Security desk. Take the stairs up." },
  { id:"escalator", img:"escalator", floor:"G", level:"Level 2", name:"Ground floor", zone:1, zoneName:"Arrival", auto:true, ride:true,
@@ -538,16 +579,21 @@ const SCENES = [
  { id:"reception", img:"reception", floor:"1", level:"Level 3", name:"Reception", zone:1, zoneName:"Arrival",
    line:"Reception has gone home. The paperwork hasn't.", next:"Walk to the gates",
    beats:[
-    { say:"Reception's empty, but the visitor log is lying open. Anyone walking past can read today's names and numbers.",
-      task:"hideLog", lesson:["Visitor details are personal data","Keep the log out of sight so the next visitor can't read the last one's."] },
-    { say:"And the badge tray is one short. That's our missing badge. Quick check for tomorrow's shift.",
-      task:"badgeTray" } ],
-   outro:"Desk secured. Gates are next, and I've flagged one of them." },
+    { hunt:{ brief:"Reception's gone home, but they've left things lying out. Two of them are a problem. Find them.",
+      risks:[
+       { task:"hideLog", box:[226,604,476,758], found:"The visitor log. Every name and number from today, wide open.", hint:"Check the counter, on the left.",
+         lesson:["Visitor details are personal data","Keep the log out of sight so the next visitor can't read the last one's."] },
+       { task:"badgeTray", box:[455,600,800,718], found:"The badge tray, and it's one short. That's our missing badge.", hint:"Count the badges in the tray." } ],
+      decoys:[ { box:[198,650,226,750], say:"Just a pen. Nothing to worry about." },
+               { box:[945,578,1058,612], say:"Old magazines. Nothing personal in there." } ] } } ],
+   outro:"Desk secured. The gates are next." },
  { id:"gates", img:"gates", floor:"1", level:"Level 4", name:"Security gates", zone:1, zoneName:"Arrival", zoneEnd:true,
    line:"The line between public and private.", next:"Head for the lifts",
    beats:[
-    { say:"Camera three. The side door next to the gates is wide open. Anyone could walk straight past the readers.",
-      task:"shutDoor", lesson:["Doors stay shut","A door left open gets round the card readers. Close it, then report it."] },
+    { hunt:{ brief:"Camera three, by the gates. Something here lets people skip the card readers. Find it.",
+      risks:[
+       { task:"shutDoor", box:[1100,196,1290,736], found:"That side door. Wide open, all afternoon.", hint:"Look to the right of the gates.",
+         lesson:["Doors stay shut","A door left open gets round the card readers. Close it, then report it."] } ] } },
     { say:"Now tap in properly at the gate.",
       task:"tapGate", lesson:["One tap, one person","Never let anyone follow you through on your card."] } ],
    outro:"Ground floor sealed. The lifts are yours." },
@@ -562,39 +608,49 @@ const SCENES = [
    beats:[
     { say:"Floor 4. Tap your card on the reader.",
       task:"lostCard", lesson:["Report lost cards fast","A blocked card is useless to whoever finds it."] },
-    { say:"Hear that? Through the open door, two colleagues are reading out a customer's booking details.",
-      task:"volume", lesson:["Need to know, not nice to know","Discuss customer details in private, with the people who need them."] } ],
+    { hunt:{ brief:"Floor 4 is meant to be quiet tonight. Something here isn't.",
+      risks:[
+       { task:"volume", box:[598,392,702,530], found:"Customer details, read out loud on an open floor.", hint:"Listen. Through the lift doors.",
+         lesson:["Need to know, not nice to know","Discuss customer details in private, with the people who need them."] } ] } } ],
    outro:"Floor 4 is covered. Your desk is straight ahead." },
  { id:"desk", img:"desk", floor:"4", level:"Level 7", name:"Your desk", zone:3, zoneName:"Workspace",
    line:"Exactly as you left it. That's the problem.", next:"Check the meeting room",
    beats:[
-    { say:"Your desk, exactly as you left it. That laptop has been showing the client dashboard since five.",
-      task:"lockLaptop", lesson:["Lock it when you leave it","Windows + L, or Ctrl + Cmd + Q on a Mac, every time you step away."] },
-    { say:"That sticky note on your monitor. What's written on the back?",
-      task:"sticky", lesson:["Passwords never go on paper","Use a password manager or a passphrase you can remember, and change any password that was written down."] },
+    { hunt:{ brief:"Your desk, exactly as you left it at five. Something here is giving away more than it should. Two things, actually.",
+      risks:[
+       { task:"lockLaptop", box:[222,446,502,642], found:"Your laptop. The client dashboard's been on show since five.", hint:"Your laptop is still awake.",
+         lesson:["Lock it when you leave it","Windows + L, or Ctrl + Cmd + Q on a Mac, every time you step away."] },
+       { task:"sticky", box:[849,266,928,340], found:"A sticky note on your monitor. What's on the back?", hint:"Something is stuck to your monitor.",
+         lesson:["Passwords never go on paper","Use a password manager or a passphrase you can remember, and change any password that was written down."] } ],
+      decoys:[ { box:[1106,572,1186,662], say:"Just coffee. It's gone cold." } ] } },
     { say:"Your desk phone. Nobody from IT is on shift tonight.",
       task:"phone" } ],
-   outro:"Desk's clean. The meeting room's next. The five o'clock lot left in a hurry." },
+   outro:"Desk's clean. The meeting room's next." },
  { id:"meeting", img:"meeting", floor:"4", level:"Level 8", name:"Meeting room", zone:3, zoneName:"Workspace", zoneEnd:true,
    line:"Half the meeting is still on the table.", next:"Go to the print station",
    beats:[
-    { say:"The whiteboard still shows the strategy diagram and a customer list. The cleaners come through at nine. Wipe it.",
-      task:"wipeBoard", lesson:["Wipe before you leave","Clear boards after meetings, and don't photograph them on a personal phone."] },
-    { say:"And the Finance Q3 binders are just lying on the table.",
-      task:"binders", lesson:["Confidential means locked away","Unreleased financials stay locked up and go only to people who need them."] } ],
+    { hunt:{ brief:"The five o'clock meeting left in a hurry. Two things in here shouldn't be seen by the cleaners at nine.",
+      risks:[
+       { task:"wipeBoard", box:[866,224,1128,432], found:"The whiteboard. A strategy diagram and a customer list.", hint:"Whose writing is that on the wall?",
+         lesson:["Wipe before you leave","Clear boards after meetings, and don't photograph them on a personal phone."] },
+       { task:"binders", box:[660,526,922,662], found:"Finance Q3. Unreleased numbers, just lying there.", hint:"Read the spines of those binders.",
+         lesson:["Confidential means locked away","Unreleased financials stay locked up and go only to people who need them."] } ],
+      decoys:[ { box:[864,436,950,506], say:"Just water. Nothing to protect." } ] } } ],
    outro:"Room's clear. The print station is the last zone." },
  { id:"printer", img:"printer", floor:"4", level:"Level 9", name:"Print station", zone:4, zoneName:"Print room", zoneEnd:true,
    line:"The printer is still warm.", next:"Enter the server room",
    beats:[
-    { say:"The printer's full of jobs nobody collected. Sort them: shred it, lock it away, or recycle it.",
-      task:"sort", lesson:["Shred it, lock it or recycle it","Personal or confidential and not needed: shred. Still needed: lock it away. Nothing sensitive: recycle."] },
-    { say:"The HR cabinet's unlocked with the key still in it. Turn it.",
-      task:"key", lesson:["Keys stay with their owner","Lock up, and hand a found key to its named holder or to Security."] } ],
+    { hunt:{ brief:"Last zone. The printer's still warm, and this corner has two problems.",
+      risks:[
+       { task:"sort", box:[810,598,1000,676], found:"Print jobs nobody collected.", hint:"The printer tray is full.",
+         lesson:["Shred it, lock it or recycle it","Personal or confidential and not needed: shred. Still needed: lock it away. Nothing sensitive: recycle."] },
+       { task:"key", box:[1330,486,1408,584], found:"The HR cabinet. Key still in the lock.", hint:"The cabinet in the corner. Look at the lock.",
+         lesson:["Keys stay with their owner","Lock up, and hand a found key to its named holder or to Security."] } ] } } ],
    outro:"Print room's clean. One door left: the server room." },
  { id:"server", img:"server", floor:"4", level:"Final", name:"Server room", zone:5, zoneName:"Lockdown", final:true,
    line:"Send the all-clear before the doors lock.",
    beats:[
-    { say:"This is it. Show me the four digits from your top bar with your fingers. Show a number, then squeeze your fist to lock it in.",
+    { say:"This is it. Enter the four digits from your top bar on the keypad. Point at each one and pinch.",
       task:"keypad" },
     { say:"Code accepted. One last check before I lift the lockdown.",
       task:"final" } ] }
@@ -634,7 +690,7 @@ const W=1408,H=768;
 const stage=$("#stage"), camEl=$("#cam"), world=$("#world"), props=$("#props"), ov=$("#ov"), cursor=$("#cursor");
 
 const G={ mode:"intro", run:0, idx:0, running:false, paused:false, timeLeft:TIME_LIMIT, last:0, score:0, hints:MAX_HINTS, code:[], found:0,
-  assessed:0, firstTry:0, hintsUsed:0, misses:[], tts:false, dwell:true, voiceOn:false, finger:false, gest:{}, badge:"none", q:null, entry:[] };
+  assessed:0, firstTry:0, hintsUsed:0, misses:[], tts:true, dwell:true, voiceOn:false, finger:false, gest:{}, badge:"none", q:null, entry:[] };
 const alive=run=>G.run===run && G.running;
 
 /* ---------- per-frame + pointer registries (run-scoped so a restart cleans everything) ---------- */
@@ -702,9 +758,75 @@ function sfx(k){
 function ringtone(){ let on=true; const once=()=>{ if(!on)return; for(let i=0;i<14;i++)tone(i%2?1320:1580,.05,"square",.03,i*.055); }; once(); const iv=setInterval(once,1900); return ()=>{on=false;clearInterval(iv);}; }
 
 /* ---------- speech out ---------- */
-function speak(text){ if(!G.tts||!("speechSynthesis" in window))return;
-  try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang="en-GB"; Voice.mute=true;
+// after=true: wait for the line that's playing instead of cutting it off (a question right after Sam's line).
+function speak(text,who="narrator",after=false){ SAID.add(text); if(!G.tts)return;
+  if(VE){ if(!after)VE.stop(); VE.speak(text,{character:who}); prepScene(G.running?G.idx:0); return; }
+  if(!("speechSynthesis" in window))return;
+  try{ if(!after)speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang="en-GB"; Voice.mute=true;
     u.onend=()=>setTimeout(()=>Voice.mute=false,500); u.onerror=()=>Voice.mute=false; speechSynthesis.speak(u);}catch(e){} }
+/* ---------- voice engine hookup (voice-engine.js) ---------- */
+const LINES={ lostGone:"Gone? It's not on my cameras either. What do you do?",
+  lostBlocked:"Old card blocked. I've sent a temporary card to the door. Tap it.",
+  stickyBack:"The back says “pw: Summer2026!”. That's your password." };
+/* Sam's lines and the questions, in the order they come up. The voice engine makes the next few
+   ahead of time, so they start without a wait even when the voice runs on a slow CPU. */
+const TASK_Q={badgeTray:"badgeIssue",holdLift:"liftVisitor",lostCard:"lostCard",phone:"phoneCall",final:"breach"};
+const SAID=new Set();
+let SCRIPT=null;
+function script(){
+  if(SCRIPT)return SCRIPT; SCRIPT=[];
+  const add=(i,t,who)=>{ if(t)SCRIPT.push({i,t,who}); };
+  const task=(i,name)=>{ const D=DECISIONS[TASK_Q[name]];
+    if(name==="lostCard")add(i,LINES.lostGone,"sam");
+    if(name==="sticky")add(i,LINES.stickyBack,"sam");
+    if(D){ add(i,D.text,"narrator"); add(i,"Correct. "+D.why,"narrator"); }
+    if(name==="lostCard")add(i,LINES.lostBlocked,"sam"); };
+  SCENES.forEach((S,i)=>{
+    S.beats.forEach(b=>{
+      if(b.hunt){ add(i,b.hunt.brief,"sam"); b.hunt.risks.forEach(r=>{ add(i,r.found,"sam"); task(i,r.task); }); }
+      else { add(i,b.say,"sam"); task(i,b.task); } });
+    add(i,S.outro,"sam"); });
+  return SCRIPT;
+}
+// Ask the voice engine to make the next three lines nobody has heard yet, from scene i on.
+function prepScene(i){
+  if(!VE||!VE.prepare||!G.tts)return;
+  const out=[];
+  for(const x of script()){ if(x.i<i||SAID.has(x.t))continue; out.push({text:x.t,character:x.who}); if(out.length>=3)break; }
+  VE.prepare(out);
+}
+let VE=null;
+function voiceState(){
+  if(!VE) return performance.now()<6000?["Loading voice…","load"]:["Voice unavailable","err"];
+  if(VE.status==="ready") return [VE.device==="webgpu"?"Voice ready (WebGPU)":"Voice ready (CPU)","ok"];
+  if(VE.status==="error") return [VE.config.FALLBACK_TO_BROWSER_VOICE?"Voice unavailable (using browser voice)":"Voice unavailable","err"];
+  return [`Loading voice… ${Math.round(VE.progress)}%`,"load"];
+}
+function paintVoice(){
+  const [t,c]=voiceState(); $$(".vbadge").forEach(b=>{ b.textContent=t; b.className="vbadge "+c; });
+  const vt=$("#vtag"), show=G.running&&c!=="ok"&&!(VE&&VE.status==="error"&&paintVoice.errShown);
+  vt.classList.toggle("on",show); $("#bTts").title=t;
+  if(VE&&VE.status==="error"&&G.running&&!paintVoice.errShown){ paintVoice.errShown=true; setTimeout(()=>{ vt.classList.remove("on"); },4000); }
+}
+function hookVoice(){
+  if(VE||!window.VoiceEngine)return; VE=window.VoiceEngine;
+  try{ const v=localStorage.getItem("lde_sam_voice"); if(v)VE.setVoiceMap({sam:v}); }catch(e){}
+  VE.on("status",s=>{ paintVoice(); if(s==="ready"&&G.running)toast(voiceState()[0]); });
+  VE.on("progress",paintVoice);
+  VE.on("start",()=>{ Voice.mute=true; });
+  VE.on("end",()=>{ setTimeout(()=>{ Voice.mute=false; },400); });
+  paintVoice(); renderVoicePicker(); VE.init(); prepScene(0);
+}
+function renderVoicePicker(){
+  const box=$("#vpick"); if(!box||!VE)return;
+  const cur=VE.voiceMap.sam||VE.config.DEFAULT_VOICE;
+  const opts=VE.listVoices().map(v=>`<option value="${v.id}"${v.id===cur?" selected":""}>${esc(v.name)} (${v.language==="en-gb"?"UK":"US"}, ${v.gender.toLowerCase()})</option>`).join("");
+  box.innerHTML=`<label class="vsel">Sam's voice <select id="vsel">${opts}</select></label>`;
+  $("#vsel").addEventListener("change",e=>{ const v=e.target.value; VE.setVoiceMap({sam:v}); try{ localStorage.setItem("lde_sam_voice",v); }catch(err){}
+    VE.stop(); VE.speak("Sam here, Security. Ready when you are.",{character:"sam"}); prepScene(0); });
+}
+if(window.VoiceEngine)hookVoice(); else { addEventListener("voiceengine",hookVoice); setTimeout(()=>{ if(!VE)paintVoice(); },6200); }
+onFrame(()=>{ const av=$("#radio .av"); if(av)av.style.setProperty("--lv",(VE&&VE.isSpeaking?VE.level:0).toFixed(3)); },false);
 
 /* ---------- HUD ---------- */
 function updateHud(){
@@ -742,7 +864,7 @@ function radio(text,hold=6500){
   return new Promise(res=>{ const r=$("#radio"), tx=r.querySelector(".tx"); clearInterval(radio.t); clearTimeout(radio.h);
     tx.textContent=""; r.classList.add("on"); tone(1500,.06,"square",.035); let i=0;
     radio.t=setInterval(()=>{ i=Math.min(text.length,i+2); tx.textContent=text.slice(0,i); if(i>=text.length){ clearInterval(radio.t); radio.h=setTimeout(hideRadio,hold); res(); } },30);
-    speak("Sam. "+text); });
+    speak(text,"sam"); });
 }
 function hideRadio(){ clearInterval(radio.t); clearTimeout(radio.h); $("#radio").classList.remove("on"); }
 function banner(S){ $("#bFloor").textContent=S.floor; $("#bTitle").textContent=S.level+" · "+S.name; $("#bLine").textContent=S.line;
@@ -752,19 +874,30 @@ function lesson(title,text,bad){ const L=$("#lesson"); L.classList.toggle("no",!
   clearTimeout(lesson.t); lesson.t=setTimeout(()=>L.classList.remove("on"),bad?4500:6500); }
 const ICONS={ palm:'<span class="emo a-pulse">✋</span>', fist:'<span class="swap"><span>✋</span><span>✊</span></span>', thumb:'<span class="emo a-pulse">👍</span>',
   pinch:'<span class="emo a-drag">🤏</span>', swipe:'<span class="emo a-swipe">👋</span>', twist:'<span class="emo a-twist">🤏</span>', wipe:'<span class="emo a-wipe">✋</span>',
-  down:'<span class="emo a-down">✋</span>', count:'<span class="emo">🖐️</span>', mouse:'<span class="emo">🖱️</span>', choice:'<span class="swap"><span>✋</span><span>👍</span></span>' };
+  down:'<span class="emo a-down">✋</span>', count:'<span class="emo">🖐️</span>', mouse:'<span class="emo">🖱️</span>', choice:'<span class="swap"><span>✋</span><span>👍</span></span>',
+  find:'<span class="emo a-pulse">🔍</span>', ask:'<span class="emo a-pulse">❔</span>' };
+let CURP=null;
 function prompt(o){
-  const p=$("#prompt"), hand=Hand.on;
-  p.querySelector(".pi").innerHTML=hand?(ICONS[o.icon]||""):ICONS.mouse;
-  p.querySelector("b").textContent=hand?o.hand:(o.mouse||o.hand);
-  p.querySelector("small").textContent=(hand?o.handSub:o.mouseSub)||"";
-  const bt=p.querySelector(".pbtns"); bt.innerHTML="";
-  if(!hand&&o.buttons) o.buttons.forEach(b=>{ const x=document.createElement("button"); x.className="btn alt"; x.textContent=b.label; x.onclick=()=>b.act(); bt.appendChild(x); });
-  const pb=p.querySelector(".pb"); pb.classList.toggle("on",!!o.bar&&hand); pb.firstChild.style.width="0%";
+  const p=$("#prompt"), vague=!!G.vague&&!o.plain;
+  const render=v=>{ const hand=Hand.on;
+    p.querySelector(".pi").innerHTML=v?ICONS.ask:(hand?(ICONS[o.icon]||""):ICONS.mouse);
+    p.querySelector("b").textContent=v?(o.ask||"What will you do?"):(hand?o.hand:(o.mouse||o.hand));
+    p.querySelector("small").textContent=v?(hand?"Try your moves. ✌️ Peace sign for a hint.":"Click, drag or hold. Press H for a hint."):((hand?o.handSub:o.mouseSub)||"");
+    const bt=p.querySelector(".pbtns"); bt.innerHTML="";
+    if(!hand&&o.buttons&&!v) o.buttons.forEach(b=>{ const x=document.createElement("button"); x.className="btn alt"; x.textContent=b.label; x.onclick=()=>b.act(); bt.appendChild(x); });
+    const pb=p.querySelector(".pb"); pb.classList.toggle("on",!!o.bar&&hand); };
+  render(vague); p.querySelector(".pb").firstChild.style.width="0%";
   p.classList.remove("on"); void p.offsetWidth; p.classList.add("on");
-  return { set(v){ pb.firstChild.style.width=clamp(v,0,1)*100+"%"; }, hide(){ p.classList.remove("on"); } };
+  const me={ set(v){ p.querySelector(".pb").firstChild.style.width=clamp(v,0,1)*100+"%"; },
+    hide(){ if(CURP===me){ p.classList.remove("on"); CURP=null; G.revealPrompt=null; } } };
+  CURP=me; G.revealPrompt=null;
+  if(vague){ let t=0;
+    const reveal=()=>{ if(CURP!==me)return; G.vague=false; G.revealPrompt=null; render(false); p.animate([{transform:"scale(1.05)"},{transform:"none"}],{duration:320}); };
+    const off=onFrame((now,dt)=>{ if(CURP!==me){ off(); return; } if(G.paused||G.mode!=="play")return; t+=dt; if(t>=VAGUE_MS){ off(); reveal(); } });
+    G.revealPrompt=()=>{ off(); reveal(); }; }
+  return me;
 }
-function hidePrompt(){ $("#prompt").classList.remove("on"); }
+function hidePrompt(){ $("#prompt").classList.remove("on"); CURP=null; G.revealPrompt=null; }
 
 /* ---------- in-world helpers ---------- */
 function el(tag,cls,html,parent=props){ const e=document.createElement(tag); if(cls)e.className=cls; if(html!=null)e.innerHTML=html; parent.appendChild(e); return e; }
@@ -836,7 +969,7 @@ function handFrame(m){
   /* pinch needs 2 frames to start and 3 frames to end, so a noisy frame never drops what you hold */
   if(!HAND.pinch){ HAND.pIn=(m.pinchy&&!m.fist)?(HAND.pIn||0)+1:0; if(HAND.pIn>=2){ HAND.pinch=true; HAND.pOut=0; } }
   else { const rel=m.pinchR>.45||m.thumbUp||(m.fist&&!m.pinchy); HAND.pOut=rel?(HAND.pOut||0)+1:0; if(HAND.pOut>=3||m.pinchR>.85){ HAND.pinch=false; HAND.pIn=0; } }
-  const raw=m.thumbUp?"thumb":m.fist?"fist":HAND.pinch?"pinch":m.count===4?"open":(m.count===1&&m.ext[0])?"point":m.count>=2?"n"+m.count:"other";
+  const raw=m.thumbUp?"thumb":m.fist?"fist":HAND.pinch?"pinch":m.count>=3?"open":(m.count===1&&m.ext[0])?"point":m.count===2?"n2":"other";
   if(raw===HAND.cand)HAND.candN++; else {HAND.cand=raw;HAND.candN=1;}
   if(HAND.candN>=3||raw==="pinch")HAND.pose=raw;
   const c=HAND.pinch?0:m.count;
@@ -869,20 +1002,25 @@ function setHover(e){ if(HAND.hover===e)return; if(HAND.hover)HAND.hover.classLi
 function hoverDwell(now){
   if(G.finger){ setHover(null); return; }
   const e=hitAt(P.x,P.y); setHover(e);
-  if(e&&!P.down&&G.dwell&&!e.hasAttribute("data-nodwell")){
+  if(HAND.fillEl&&HAND.fillEl!==e){ HAND.fillEl.style.setProperty("--p",0); HAND.fillEl=null; }
+  if(e&&!P.down&&G.dwell&&!e.hasAttribute("data-nodwell")&&!e.classList.contains("good")&&!e.classList.contains("struck")&&!e.classList.contains("bad")){
     if(HAND.dwellEl!==e){HAND.dwellEl=e;HAND.dwellT=now;HAND.dwellDone=false;}
-    const p=Math.min(1,(now-HAND.dwellT)/DWELL_MS); cursor.style.setProperty("--p",HAND.dwellDone?0:p);
+    const ms=+e.dataset.dwell||DWELL_MS, p=Math.min(1,(now-HAND.dwellT)/ms), shown=HAND.dwellDone?0:p;
+    cursor.style.setProperty("--p",shown);
+    if(e.hasAttribute("data-fill")){ e.style.setProperty("--p",shown); HAND.fillEl=e; }
     if(p>=1&&!HAND.dwellDone){HAND.dwellDone=true;activate(e);}
   } else { HAND.dwellEl=null; cursor.style.setProperty("--p",0); }
 }
 function handClick(){ if(G.finger)return; const e=hitAt(P.x,P.y); if(e)activate(e); }
-function activate(e){ if(G.paused&&!e.closest("#pz"))return; sfx("select"); e.click();
+function activate(e){ if(G.paused&&!e.closest("#pz"))return; if(e.closest("#ov")&&performance.now()-(G.ovT||0)<700)return; sfx("select"); e.click();
   const r=document.createElement("div"); r.style.cssText=`position:fixed;left:${P.x}px;top:${P.y}px;width:20px;height:20px;margin:-10px;border-radius:50%;border:3px solid #ffb23e;z-index:99;pointer-events:none;transition:.45s`;
   document.body.appendChild(r); requestAnimationFrame(()=>{r.style.transform="scale(4)";r.style.opacity="0";}); setTimeout(()=>r.remove(),500); }
 /* pose feedback on the camera preview */
-const POSENAME={point:"☝️ Point",pinch:"🤏 Pinch",open:"✋ Open hand",fist:"✊ Fist",thumb:"👍 Thumbs up",n2:"✌️ 2 fingers",n3:"3 fingers",other:"…"};
+const POSENAME={point:"☝️ Point",pinch:"🤏 Pinch",open:"✋ Open hand",fist:"✊ Fist",thumb:"👍 Thumbs up",n2:"✌️ Peace (hint)",other:"…"};
 onFrame(()=>{ if(!Hand.on)return; const live=handLive(), c=$("#poseChip"), cp=$("#camPrev"); cp.classList.toggle("lost",!live);
-  const t=live?(POSENAME[HAND.pose]||"…"):"Show your hand"; if(c.textContent!==t)c.textContent=t; },false);
+  let t=live?(POSENAME[HAND.pose]||"…"):"Show your hand";
+  if(live&&HAND.m){ const y=HAND.m.tip.y, x=1-HAND.m.tip.x; if(y>MY0+MYH+.02)t="⬆ Raise your hand"; else if(y<MY0-.02)t="⬇ Lower your hand"; else if(x<MX-.02)t="➡ Move right"; else if(x>1-MX+.02)t="⬅ Move left"; }
+  cp.classList.toggle("lost",!live||/^[⬆⬇⬅➡]/.test(t)); if(c.textContent!==t)c.textContent=t; },false);
 /* the ring cursor follows the hand */
 onFrame(()=>{ const show=handPtr()&&!G.finger; cursor.style.display=show?"block":"none";
   if(show){ cursor.style.transform=`translate(${P.x}px,${P.y}px)`; cursor.classList.toggle("down",P.down); } },false);
@@ -893,17 +1031,18 @@ setInterval(()=>{ if(!HAND.on)return; const gap=performance.now()-HAND.seen;
 /* ghost hand: the player's own hand drawn as a glowing skeleton at the cursor */
 const gcv=$("#ghost"), gx=gcv.getContext("2d");
 const CONN=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
-const POSECOL={pinch:"#ffb23e",open:"#7be9ff",fist:"#ff8a5c",thumb:"#2fcf84",point:"#ffffff"};
+const POSECOL={pinch:"#ffb23e",open:"#7be9ff",fist:"#ff8a5c",thumb:"#2fcf84",point:"#ffffff",n2:"#c9a7ff"};
 function sizeGhost(){ const d=devicePixelRatio||1; gcv.width=innerWidth*d; gcv.height=innerHeight*d; gcv.style.width=innerWidth+"px"; gcv.style.height=innerHeight+"px"; }
 function drawGhost(){
   const d=devicePixelRatio||1; gx.setTransform(d,0,0,d,0,0); gx.clearRect(0,0,innerWidth,innerHeight);
-  if(!HAND.m||!handLive()||G.mode==="intro")return; if(!G.finger&&!handPtr())return;
+  if(!HAND.m||!handLive()||G.mode==="intro"){ HAND.gp=null; return; } if(!G.finger&&!handPtr()){ HAND.gp=HAND.palm; return; }
   const pts=HAND.m.lm.map(p=>camToScr(p.x,p.y,false));
   const len=Math.hypot(pts[0].x-pts[9].x,pts[0].y-pts[9].y)||1;
   let ax,ay,s,anchor;
   if(G.finger){ anchor={x:(pts[0].x+pts[9].x)/2,y:(pts[0].y+pts[9].y)/2}; s=clamp(150/len,.3,1.6); ax=innerWidth*.87; ay=innerHeight*.58; }
   else { anchor=HAND.pinch?{x:(pts[4].x+pts[8].x)/2,y:(pts[4].y+pts[8].y)/2}:pts[8]; s=clamp(100/len,.3,1.1); ax=P.x; ay=P.y; }
   const q=pts.map(p=>({x:ax+(p.x-anchor.x)*s,y:ay+(p.y-anchor.y)*s}));
+  HAND.gp={x:(q[0].x+q[5].x+q[9].x+q[13].x+q[17].x)/5,y:(q[0].y+q[5].y+q[9].y+q[13].y+q[17].y)/5};
   const col=POSECOL[HAND.pose]||"#ffffff";
   gx.globalAlpha=.2; gx.fillStyle=col; gx.beginPath(); [0,1,5,9,13,17].forEach((i,k)=>k?gx.lineTo(q[i].x,q[i].y):gx.moveTo(q[i].x,q[i].y)); gx.closePath(); gx.fill();
   gx.globalAlpha=.9; gx.lineCap="round"; gx.lineJoin="round"; gx.shadowColor=col; gx.shadowBlur=14; gx.strokeStyle="rgba(255,255,255,.92)"; gx.lineWidth=G.finger?7:5;
@@ -934,7 +1073,9 @@ function handLoop(){
       if(res.landmarks&&res.landmarks.length){ const lm=res.landmarks[0]; handFrame(measure(lm,Hand.aspect)); drawCam(lm); } else drawCam(null); }catch(e){} }
   requestAnimationFrame(handLoop);
 }
-function drawCam(lm){ const c=$("#camc"), x=c.getContext("2d"); x.clearRect(0,0,c.width,c.height); if(!lm)return;
+function drawCam(lm){ const c=$("#camc"), x=c.getContext("2d"); x.clearRect(0,0,c.width,c.height);
+  x.setLineDash([7,6]); x.lineWidth=2; x.strokeStyle="rgba(123,233,255,.85)"; x.strokeRect(MX*c.width,MY0*c.height,(1-2*MX)*c.width,MYH*c.height); x.setLineDash([]);
+  if(!lm)return;
   x.strokeStyle="#ffb23e"; x.lineWidth=3; CONN.forEach(([a,b])=>{x.beginPath();x.moveTo(lm[a].x*c.width,lm[a].y*c.height);x.lineTo(lm[b].x*c.width,lm[b].y*c.height);x.stroke();});
   x.fillStyle="#fff"; lm.forEach(p=>{x.beginPath();x.arc(p.x*c.width,p.y*c.height,3,0,7);x.fill();}); }
 
@@ -976,84 +1117,75 @@ function worldElItem(node){ return { rect:()=>node.getBoundingClientRect(),
 /* pick something up and drop it on the right target. zones: world:[box] | dock:true | screen:element */
 function dragTask(o){
   return new Promise(resolve=>{
-    let ghost=null, grab=null, first=true, done=false, lastX=0, tilt=0, wentWrong=false;
+    let ghost=null, grab=null, first=true, done=false, busy=false, lastX=0, tilt=0;
     const lk=o.lockRect?lockOn(o.lockRect,o.label):null;
     const pr=o.prompt?prompt(o.prompt):null;
     const zs=o.zones.map(z=>({...z}));
     const dock=$("#dock");
     function showZones(on){
-      zs.forEach(z=>{ if(z.world){ if(on){ z.el=place(el("div","dz"+(z.world[2]>1330?" re":""),z.label?`<b>${esc(z.label)}</b>`:""),z.world); } else if(z.el){ z.el.remove(); z.el=null; } }
+      zs.forEach(z=>{ if(z.world){ if(on){ if(!z.el)z.el=place(el("div","dz"+(z.world[2]>1330?" re":""),z.label?`<b>${esc(z.label)}</b>`:""),z.world); } else if(z.el){ z.el.remove(); z.el=null; } }
         if(z.screen) z.screen.classList.toggle("want",on); });
       const dz=zs.filter(z=>z.dock);
       if(on&&dz.length){ dock.innerHTML=""; dz.forEach(z=>{ z.el=el("div","dt",`<i>${z.icon||"📥"}</i>${esc(z.label)}`,dock); }); dock.classList.add("on"); $("#radio").classList.add("away"); }
       if(!on){ dock.classList.remove("on"); $("#radio").classList.remove("away"); }
     }
     function zoneAt(x,y){ const w=toW(x,y);
-      for(const z of zs){ if(z.world&&inW(w,z.world,8))return z; if(z.dock&&z.el&&inS(x,y,z.el.getBoundingClientRect(),10))return z;
+      for(const z of zs){ if(z.world&&inW(w,z.world,P.src==="hand"?20:8))return z; if(z.dock&&z.el&&inS(x,y,z.el.getBoundingClientRect(),P.src==="hand"?24:10))return z;
         if(z.screen&&inS(x,y,z.screen.getBoundingClientRect(),P.src==="hand"?44:14))return z; } return null; }
     const offs=[];
     offs.push(onPtr("down",p=>{
-      if(done||grab||G.paused||G.mode!=="play")return false;
-      const r=o.item.rect(); if(!inS(p.x,p.y,r,p.src==="hand"?28:4))return false;
+      if(done||grab||busy||G.paused||G.mode!=="play")return false;
+      const r=o.item.rect(); if(!inS(p.x,p.y,r,p.src==="hand"?44:4))return false;
       grab={dx:p.x-(r.left+r.width/2), dy:p.y-(r.top+r.height/2)}; ghost=o.item.ghost(); o.item.hide(); sfx("pickup"); gest("pinch");
       moveGhostEl(ghost,p.x-grab.dx*.5,p.y-grab.dy*.5,0,1.06); lastX=p.x; showZones(true);
       if(o.onGrab)o.onGrab(ghost,first); return true; }));
-    offs.push(onPtr("move",p=>{ if(!grab)return; tilt=lerp(tilt,clamp((p.x-lastX)*.8,-14,14),.35); lastX=p.x;
+    offs.push(onPtr("move",p=>{ if(!grab||!ghost)return; tilt=lerp(tilt,clamp((p.x-lastX)*.8,-14,14),.35); lastX=p.x;
       moveGhostEl(ghost,p.x-grab.dx*.5,p.y-grab.dy*.5,tilt,1.06);
       const z=zoneAt(p.x,p.y); zs.forEach(q=>{ const t=q.el||q.screen; if(t)t.classList.toggle("hot",q===z); }); }));
     offs.push(onPtr("up",p=>{ if(!grab)return false; release(p.x,p.y); return true; }));
     offs.push(onFrame(now=>{ if(grab&&P.src==="hand"&&now-HAND.seen>1100)release(-9999,-9999); }));
-    async function flyBack(){ const r=o.item.rect(); await animGhost(ghost,r.left+r.width/2,r.top+r.height/2,1,320); ghost.el.remove(); ghost=null; o.item.show(); if(o.onCancel)o.onCancel(); }
+    async function flyBack(g){ const r=o.item.rect(); await animGhost(g,r.left+r.width/2,r.top+r.height/2,1,300); g.el.remove(); o.item.show(); if(o.onCancel)o.onCancel(); }
     async function release(x,y){
-      if(!grab)return; grab=null; const z=zoneAt(x,y); zs.forEach(q=>{const t=q.el||q.screen; if(t)t.classList.remove("hot");}); showZones(false);
-      if(!z){ await flyBack(); return; }
-      if(z.ok){ done=true; offs.forEach(f=>f()); if(pr)pr.hide(); const g=ghost; ghost=null;
-        if(o.success) await o.success(z,g); else g.el.remove();
-        if(lk)lk.ok(); if(o.score!==0){ const c=toS(...ctr(z.world||o.lockRect||[600,300,800,400])); addScore(first?(o.score||100):Math.round((o.score||100)*.4),c.x,c.y); }
-        resolve({first});
-      } else { first=false; wentWrong=true; sfx("bad"); penalty(); lesson(z.title||"Not there",z.why||"Try another place.",true); await flyBack(); }
+      if(!grab)return; grab=null; busy=true; const g=ghost; ghost=null;
+      const z=zoneAt(x,y); zs.forEach(q=>{const t=q.el||q.screen; if(t)t.classList.remove("hot");}); showZones(false);
+      try{
+        if(!z){ await flyBack(g); return; }
+        if(z.ok){ done=true; G.vague=false; offs.forEach(f=>f()); if(pr)pr.hide();
+          if(o.success) await o.success(z,g); else g.el.remove();
+          if(lk)lk.ok(); if(o.score!==0){ const c=toS(...ctr(z.world||o.lockRect||[600,300,800,400])); addScore(first?(o.score||100):Math.round((o.score||100)*.4),c.x,c.y); }
+          resolve({first});
+        } else { first=false; sfx("bad"); penalty(); lesson(z.title||"Not there",z.why||"Try another place.",true); await flyBack(g); }
+      } finally { busy=false; if(g&&g.el&&g.el.isConnected&&!done)g.el.remove(); }
     }
   });
 }
-/* dock-free decision card answered with 1, 2 or 3 fingers */
+/* question card: point at an answer and pinch it (or hold still on it); mouse and keys work too */
 function decide(D,{final=false}={}){
   return new Promise(resolve=>{
-    const S=G.scenes[G.idx], handMode=Hand.on, order=shuffle(D.opts.map((_,i)=>i));
-    const Q={D,order,tries:0,struck:new Set(),done:false,opened:performance.now(),sel:-1,cand:-1,candT:0,fist:0,thumb:0,auto:0,final,resolve};
+    const S=G.scenes[G.idx], hand=Hand.on, order=shuffle(D.opts.map((_,i)=>i));
+    const Q={D,order,tries:0,struck:new Set(),done:false,opened:performance.now(),thumb:0,auto:0,final,resolve};
     G.q=Q;
-    const opts=order.map((oi,k)=>`<button class="opt" data-hit data-act="opt" data-k="${k}"><span class="let">${"ABC"[k]}</span><span class="ot">${esc(D.opts[oi].t)}</span>${handMode?`<span class="fn">${handIcon(k+1)}<i>${k+1}</i></span>`:""}</button>`).join("");
-    openOv(bar(D.title,final?"Final check":S.level+" · "+S.name)+`<p class="q">${esc(D.text)}</p><div class="opts">${opts}</div>`+
-      `<div class="qfoot"><button class="btn alt" data-hit data-act="hint">💡 Hint (${G.hints} left)</button><button class="btn alt" data-hit data-act="speak">🔊 Read again</button>`+
-      `<span>${handMode?"Show 1, 2 or 3 fingers to pick (4 for a hint), then squeeze your fist to lock it in.":"Click an answer, press 1 to 3, or say “A”, “B” or “C”."}</span></div><div class="fb" id="fb"></div>`,"decision");
-    G.finger=handMode;
+    const opts=order.map((oi,k)=>`<button class="opt tile" data-hit data-fill data-dwell="1800" data-act="opt" data-k="${k}"><span class="let">${"ABC"[k]}</span><span class="ot">${esc(D.opts[oi].t)}</span></button>`).join("");
+    const how=hand?"Point at an answer and pinch to choose it, or hold still on it.":"Click an answer or press 1, 2 or 3.";
+    openOv(bar(D.title,final?"Final check":S.level+" · "+S.name)+`<p class="q">${esc(D.text)}</p><div class="opts three">${opts}</div>`+
+      `<div class="qfoot"><button class="btn alt" data-hit data-dwell="2400" data-act="hint">💡 Hint (${G.hints} left)</button><button class="btn alt" data-hit data-dwell="2400" data-act="speak">🔊 Read again</button>`+
+      `<span>${how}${G.voiceOn?" Or say “answer A”.":""}</span></div><div class="fb" id="fb"></div>`,"decision");
     readQ(true);
     Q.off=onFrame((now,dt)=>{
-      if(G.mode!=="decision"||G.paused||G.q!==Q)return;
-      const live=handLive();
-      if(!Q.done){
-        const c=live?HAND.count:0, k=(c>=1&&c<=3)?c-1:c===4?3:-1;
-        if(k>=0&&now-Q.opened>500){ if(k===Q.cand)Q.candT+=dt; else {Q.cand=k;Q.candT=0;}
-          const ok=k===3?G.hints>0:!Q.struck.has(k);
-          if(Q.candT>=420&&Q.sel!==k&&ok){ Q.sel=k; Q.fist=0; tone(880,.05,"triangle",.06); } }
-        Q.fist=(live&&HAND.pose==="fist"&&Q.sel>=0)?Q.fist+dt:Math.max(0,Q.fist-dt*2);
-        ov.querySelectorAll(".opt").forEach((b,i)=>{ b.classList.toggle("sel",Q.sel===i); b.style.setProperty("--p",Q.sel===i?clamp(Q.fist/380,0,1):0); });
-        const hb=ov.querySelector('[data-act="hint"]'); if(hb){ hb.classList.toggle("sel",Q.sel===3); hb.style.setProperty("--p",Q.sel===3?clamp(Q.fist/380,0,1):0); }
-        if(Q.fist>=380){ const pick=Q.sel; Q.sel=-1; Q.cand=-1; Q.fist=0; gest("count"); if(pick===3)useHint(); else answer(pick); }
-      } else {
-        Q.thumb=(live&&HAND.pose==="thumb")?Q.thumb+dt:Math.max(0,Q.thumb-dt*2);
-        Q.auto+=dt; const cb=ov.querySelector('[data-act="cont"]');
-        if(cb)cb.style.setProperty("--p",Math.max(clamp(Q.thumb/600,0,1),clamp(Q.auto/9000,0,1)));
-        if(Q.thumb>=600){ gest("thumb"); closeDecision(); } else if(Q.auto>=9000) closeDecision();
-      }
+      if(G.mode!=="decision"||G.paused||G.q!==Q||!Q.done)return;
+      Q.thumb=(handLive()&&HAND.pose==="thumb")?Q.thumb+dt:Math.max(0,Q.thumb-dt*2);
+      Q.auto+=dt; const cb=ov.querySelector('[data-act="cont"]');
+      if(cb)cb.style.setProperty("--p",Math.max(clamp(Q.thumb/800,0,1),clamp(Q.auto/10000,0,1)));
+      if(Q.thumb>=800){ gest("thumb"); closeDecision(); } else if(Q.auto>=10000) closeDecision();
     });
   });
 }
 function bar(t,r){ return `<div class="bar"><div class="ic">i</div>${esc(t)}${r?`<small>${esc(r)}</small>`:""}</div>`; }
-function openOv(html,mode,blur){ hideRadio(); hidePrompt(); $("#lesson").classList.remove("on"); ov.innerHTML='<div class="card">'+html+'</div>'; ov.className="show";
+function openOv(html,mode,blur){ G.ovT=performance.now(); HAND.dwellEl=null; hideRadio(); hidePrompt(); $("#lesson").classList.remove("on"); ov.innerHTML='<div class="card">'+html+'</div>'; ov.className="show";
   stage.classList.toggle("dim",!blur); stage.classList.toggle("blur",!!blur); G.mode=mode; setHover(null); }
 function closeOv(){ ov.className=""; ov.innerHTML=""; stage.classList.remove("dim","blur"); G.mode=G.running?"play":G.mode; G.finger=false; setHover(null); }
-function readQ(auto){ const Q=G.q; if(!Q)return; const was=G.tts; if(!auto)G.tts=true;
-  speak(Q.D.text+" Option A. "+Q.D.opts[Q.order[0]].t+". Option B. "+Q.D.opts[Q.order[1]].t+". Option C. "+Q.D.opts[Q.order[2]].t); G.tts=was; }
+function readQ(auto){ const Q=G.q; if(!Q)return; const was=G.tts; if(!auto)G.tts=true; SAID.add(Q.D.text);
+  speak(Q.D.text+" Option A. "+Q.D.opts[Q.order[0]].t+". Option B. "+Q.D.opts[Q.order[1]].t+". Option C. "+Q.D.opts[Q.order[2]].t,"narrator",!!auto); G.tts=was; }
 function answer(k){
   const Q=G.q; if(!Q||Q.done||G.mode!=="decision"||Q.struck.has(k))return;
   const opt=Q.D.opts[Q.order[k]]; Q.tries++;
@@ -1071,6 +1203,18 @@ function answer(k){
   }
 }
 function closeDecision(){ const Q=G.q; if(!Q)return; Q.off(); G.q=null; closeOv(); Q.resolve({first:Q.tries===1}); }
+function requestHint(fromHand){
+  if(!G.running||G.paused)return;
+  if(G.mode==="decision"){ const before=G.hints; useHint(); if(fromHand&&G.hints<before)gest("peace"); return; }
+  if(G.mode!=="play")return;
+  const spend=()=>{ if(G.hints<=0){ toast("No hints left"); return false; } G.hints--; G.hintsUsed++; sfx("hint"); if(fromHand)gest("peace"); updateHud(); return true; };
+  if(G.revealPrompt){ if(spend())G.revealPrompt(); return; }
+  if(G.hunt&&G.hunt.reveal){ if(G.hints<=0){ toast("No hints left"); return; } if(G.hunt.reveal())spend(); return; }
+  toast("Nothing to hint at right now");
+}
+let peaceT=0, peaceCool=0;
+onFrame((now,dt)=>{ if(!G.running||G.paused||!handLive()||HAND.pose!=="n2"||now<peaceCool){ peaceT=Math.max(0,peaceT-dt*2); return; }
+  peaceT+=dt; if(peaceT>=900){ peaceT=0; peaceCool=now+2500; requestHint(true); } },false);
 function useHint(){
   const Q=G.q; if(!Q||Q.done||G.mode!=="decision")return; if(G.hints<=0){toast("No hints left");return;}
   const wrong=[...Q.order.keys()].filter(k=>!Q.D.opts[Q.order[k]].ok&&!Q.struck.has(k)); if(!wrong.length)return;
@@ -1125,7 +1269,7 @@ const TASKS={
   const drawer=place(el("div","drawer",`<svg viewBox="0 0 372 92" preserveAspectRatio="none"><path d="M6 4h360l-8 22H14z" fill="#3b4652" stroke="#14202b" stroke-width="3" stroke-linejoin="round"/>
     <rect x="10" y="24" width="352" height="66" rx="5" fill="#eef2f5" stroke="#14202b" stroke-width="3"/><rect x="146" y="44" width="80" height="12" rx="6" fill="#c4ced6" stroke="#14202b" stroke-width="2.5"/></svg>`),R.drawer);
   await dragTask({ item:spriteItem("log_sprite",patch), zones:[{id:"drawer",ok:true,world:R.drawer,label:"Drawer"}], lockRect:R.log, label:"Visitor log open",
-    prompt:{icon:"pinch",hand:"Pinch the visitor log and drop it in the drawer",handSub:"The drawer opens when you pick it up",mouse:"Drag the visitor log into the drawer",mouseSub:"The drawer opens when you pick it up"},
+    prompt:{ask:"What will you do about the open visitor log?",icon:"pinch",hand:"Pinch the visitor log and drop it in the drawer",handSub:"The drawer opens when you pick it up",mouse:"Drag the visitor log into the drawer",mouseSub:"The drawer opens when you pick it up"},
     onGrab:()=>{ drawer.classList.add("open"); sfx("drawer"); }, onCancel:()=>drawer.classList.remove("open"),
     success:async(z,g)=>{ const r=sRect(R.drawer); await animGhost(g,r.left+r.width/2,r.top+r.height*.5,.5,340,.2); g.el.remove(); await sleep(150);
       drawer.classList.remove("open"); sfx("drawer"); } });
@@ -1140,7 +1284,7 @@ const TASKS={
  async shutDoor(){
   const D=GEO.gates, lk=lockOn(D.door,"Side door open");
   await new Promise(res=>{ let down=null, did=false;
-    const pr=prompt({icon:"swipe",hand:"Swipe your hand sideways to swing the door shut",handSub:"A quick sweep, like pushing it closed",mouse:"Drag across the door to shut it"});
+    const pr=prompt({ask:"What will you do about the open door?",icon:"swipe",hand:"Swipe your hand sideways to swing the door shut",handSub:"A quick sweep, like pushing it closed",mouse:"Drag across the door to shut it"});
     const offs=[ onSwipe(()=>shut()),
       onPtr("down",p=>{ if(p.src!=="mouse"||G.mode!=="play")return false; const w=toW(p.x,p.y); if(!inW(w,D.door,30))return false; down=w; return true; }),
       onPtr("move",p=>{ if(!down||p.src!=="mouse")return; if(Math.abs(toW(p.x,p.y).x-down.x)>70)shut(); }),
@@ -1187,9 +1331,9 @@ const TASKS={
   await sleep(380); pocket.innerHTML='<div class="idc gone"><b>?</b></div><span>Your card</span>';
   setBadge("lost","shake"); lesson("Your ID card is gone","It was on you at the gates. It must have dropped somewhere.",true);
   setTimeout(hidePocket,2600);
-  await radio("Gone? It's not on my cameras either. What do you do?",3500); await sleep(500);
+  await radio(LINES.lostGone,3500); await sleep(500);
   await decide(DECISIONS.lostCard);
-  await radio("Old card blocked. I've sent a temporary card to the door. Tap it.",5000);
+  await radio(LINES.lostBlocked,5000);
   setBadge("temp","drop"); sfx("clink"); await sleep(600); lk.remove();
   await tapReader(E.reader,E.glows,"Card reader");
  },
@@ -1199,7 +1343,7 @@ const TASKS={
   const waves=el("div","waves","<i></i><i></i><i></i>"); waves.style.left=c[0]+"px"; waves.style.top=(c[1]-20)+"px";
   const bub=bubble(E.people[0]+14,E.people[1]+4,"…so her booking reference is EK-4471, passport ending 3302…","l");
   const meter=place(el("div","vol","<s></s><b></b>"),E.meter), fill=meter.firstChild, knob=meter.lastChild;
-  const pr=prompt({icon:"down",hand:"Hold up your open hand and lower it slowly to bring the volume down",mouse:"Drag the volume slider down",bar:true});
+  const pr=prompt({ask:"How will you deal with the loud conversation?",icon:"down",hand:"Hold up your open hand and lower it slowly to bring the volume down",mouse:"Drag the volume slider down",bar:true});
   let v=1, lastY=null, md=null;
   await new Promise(res=>{ let fin=false;
     const setV=x=>{ v=clamp(x,0,1); fill.style.height=`calc(${v*100}% - 6px)`; knob.style.bottom=`calc(${v*100}% - 6px)`; waves.style.setProperty("--s",.45+v*.75); waves.style.opacity=.2+v*.8; pr.set(1-v); };
@@ -1218,7 +1362,7 @@ const TASKS={
  /* Desk: make a fist to lock the laptop */
  async lockLaptop(){
   const D=GEO.desk, lk=lockOn(D.laptop,"Screen unlocked"), c=ctr(D.laptop), ring=wring(c[0],c[1],52);
-  const pr=prompt({icon:"fist",hand:"Close your hand into a fist to lock the laptop",handSub:"Hold it for a moment",mouse:"Click and hold the laptop to lock it",bar:true});
+  const pr=prompt({ask:"What will you do about the laptop?",icon:"fist",hand:"Close your hand into a fist to lock the laptop",handSub:"Hold it for a moment",mouse:"Click and hold the laptop to lock it",bar:true});
   await holdPose({pose:"fist",ms:700,rect:D.laptop,ring,pr});
   pr.hide(); ring.remove(); gest("fist"); lockScreen(D.laptopQuad); sfx("chime"); lk.ok(); scoreAtW(100,D.laptop);
  },
@@ -1230,9 +1374,10 @@ const TASKS={
            {id:"drawer",ok:false,dock:true,icon:"🗄️",label:"Desk drawer",title:"Not in a drawer",why:"A written password is still readable in a drawer. Destroy it, then change the password."},
            {id:"monitor",ok:false,dock:true,icon:"🖥️",label:"Back on the monitor",title:"Not on the monitor",why:"Anyone walking past can read it there."}],
     lockRect:D.note, label:"Sticky note",
-    prompt:{icon:"pinch",hand:"Pinch the sticky note and peel it off",mouse:"Drag the sticky note off the monitor"},
-    onGrab:(g)=>{ setTimeout(()=>g.el.classList.add("flipped"),180); if(!told){ told=true; radio("The back says “pw: Summer2026!”. That's your password. Where does it go?",4500); } },
-    success:async(z,g)=>{ const r=z.el.getBoundingClientRect(); await animGhost(g,r.left+r.width/2,r.top+r.height/2,.15,380,.3,40); g.el.remove(); sfx("crumple"); } });
+    prompt:{ask:"What will you do about the sticky note?",icon:"pinch",hand:"Pinch the sticky note and peel it off",mouse:"Drag the sticky note off the monitor"},
+    onGrab:(g)=>{ setTimeout(()=>g.el.classList.add("flipped"),180); if(!told){ told=true; radio(LINES.stickyBack,4500); } },
+    success:async(z,g)=>{ const r=z.el?z.el.getBoundingClientRect():{left:innerWidth/2,top:innerHeight*.65,width:0,height:0};
+      await animGhost(g,r.left+r.width/2,r.top+r.height/2,.15,380,.3,40); g.el.remove(); patch.style.display="block"; sfx("crumple"); } });
   assess(res.first,{title:"The password on a sticky note",why:"Destroy written passwords and change them. Use a password manager instead."});
  },
  /* Desk: the phone rings (decision) */
@@ -1248,7 +1393,7 @@ const TASKS={
  /* Meeting room: wipe the whiteboard with your open hand */
  async wipeBoard(){
   const M=GEO.meeting, q=M.board, bx=M.boardBox, lk=lockOn(bx,"Customer list on the board");
-  const pr=prompt({icon:"wipe",hand:"Open your hand and rub it across the board",handSub:"Wipe until it's clean",mouse:"Hold the mouse button and scrub across the board",bar:true});
+  const pr=prompt({ask:"What will you do about the whiteboard?",icon:"wipe",hand:"Rub your hand across the board",handSub:"The dashed circle is your eraser. Wipe until it's clean",mouse:"Hold the mouse button and scrub across the board",bar:true});
   await wipe(q,bx,pr);
   pr.hide(); gest("wipe"); lk.ok(); scoreAtW(100,bx);
  },
@@ -1260,7 +1405,7 @@ const TASKS={
            {id:"shred",ok:false,world:M.shredder,label:"Shredder",title:"Don't destroy it",why:"It's still needed. Lock it away instead."},
            {id:"home",ok:false,dock:true,icon:"🎒",label:"Take it home",title:"Not home",why:"Confidential papers stay in the office, locked away."}],
     lockRect:M.binders, label:"Finance Q3 left out",
-    prompt:{icon:"pinch",hand:"Pinch the Finance binders and put them somewhere safe",mouse:"Drag the Finance binders somewhere safe"},
+    prompt:{ask:"What will you do with the Finance binders?",icon:"pinch",hand:"Pinch the Finance binders and put them somewhere safe",mouse:"Drag the Finance binders somewhere safe"},
     success:async(z,g)=>{ const r=sRect(M.cabinet); await animGhost(g,r.left+r.width*.55,r.top+r.height*.45,.18,420,0); g.el.remove(); sfx("thud"); } });
   assess(res.first,{title:"The Finance Q3 binders",why:"Unreleased financials are confidential: lock them away."});
  },
@@ -1276,7 +1421,7 @@ const TASKS={
     sfx("whoosh"); await sleep(30); card.style.transform="none"; card.style.opacity="1"; await sleep(520);
     const Z=(id,label,world)=>({id,label,world,ok:pg.zone===id,title:"Wrong place",why:pg.why});
     const res=await dragTask({ item:worldElItem(card), zones:[Z("shred","Shredder",R.shredder),Z("cabinet","Locked cabinet",R.cabinet),Z("recycle","Recycling",R.recycle)],
-      prompt:{icon:"pinch",hand:`Pinch “${pg.title}” and drop it in the right place`,handSub:"Shredder, locked cabinet or recycling",mouse:`Drag “${pg.title}” to the right place`,mouseSub:"Shredder, locked cabinet or recycling"},
+      prompt:{ask:"What will you do with the printouts?",icon:"pinch",hand:`Pinch “${pg.title}” and drop it in the right place`,handSub:"Shredder, locked cabinet or recycling",mouse:`Drag “${pg.title}” to the right place`,mouseSub:"Shredder, locked cabinet or recycling"},
       success:async(z,g)=>{ card.remove(); await sortAnim(z.id,g); }, score:50 });
     assess(res.first,{title:pg.title,why:pg.why}); lesson(res.first?"Right":"Got there",pg.why);
     await sleep(300);
@@ -1286,7 +1431,7 @@ const TASKS={
  /* Print room: pinch the key and turn your hand */
  async key(){
   const R=GEO.printer, patch=assetImg("key_patch"), K2=keySvg(R.lock), lk=lockOn(R.keyBox,"Key left in the lock");
-  const pr=prompt({icon:"twist",hand:"Pinch the key, then turn your hand like a key",handSub:"Keep pinching while you turn",mouse:"Drag the key sideways to turn it",bar:true});
+  const pr=prompt({ask:"What will you do about the cabinet?",icon:"twist",hand:"Pinch the key, then turn your hand like a key",handSub:"Keep pinching while you turn",mouse:"Drag the key sideways to turn it",bar:true});
   await new Promise(res=>{ let grab=null, rot=0, done=false;
     const offs=[ onPtr("down",p=>{ if(done||G.mode!=="play")return false; if(!inW(toW(p.x,p.y),R.keyBox,p.src==="hand"?34:8))return false; grab={src:p.src,a0:HAND.angle,x0:p.x}; sfx("pickup"); return true; }),
       onPtr("up",()=>{ grab=null; }),
@@ -1315,6 +1460,55 @@ function showPocket(label,x="50%",fromHud=true){
   return pocket;
 }
 function hidePocket(){ const p=$("#pocket"); p.classList.remove("on","held"); }
+/* find-it-yourself rooms: risks are hidden in the picture, a few harmless decoys cost time */
+function pickTarget(w,pad,items){
+  let best=null, bestA=Infinity;
+  for(const it of items){ const b=it.box; if(inW(w,b,0)){ const a=(b[2]-b[0])*(b[3]-b[1]); if(a<bestA){ best=it; bestA=a; } } }
+  if(best)return best;
+  let bd=Infinity;
+  for(const it of items){ const b=it.box; if(!inW(w,b,pad))continue; const dx=Math.max(b[0]-w.x,0,w.x-b[2]), dy=Math.max(b[1]-w.y,0,w.y-b[3]), d=Math.hypot(dx,dy); if(d<bd){ bd=d; best=it; } }
+  return best;
+}
+function hintMark(b){ const e=place(el("div","lock pulse hintm",'<i></i><i></i><i></i><i></i><b>?</b>'),b); setTimeout(()=>e.classList.add("fade"),4500); setTimeout(()=>e.remove(),5200); }
+function ping(b,ok){ const c=ctr(b), e=el("div","ping"+(ok?"":" no")); e.style.left=c[0]+"px"; e.style.top=c[1]+"px"; setTimeout(()=>e.remove(),950); }
+function decoyHit(d){ ping(d.box,false); if(d.checked){ toast(d.say); return; } d.checked=true; sfx("bad"); penalty(DECOY_PENALTY); lesson("Nothing wrong here",d.say,true); }
+async function runHunt(H,S){
+  const run=G.run, risks=H.risks.map(r=>({...r,line:r.found,found:false})), decoys=(H.decoys||[]).map(d=>({...d,checked:false}));
+  const HS={risks,idle:0,reveal:null}; G.hunt=HS;
+  const count=()=>{ $("#lvlSub").textContent=`Zone ${S.zone}: ${S.zoneName} · Found ${risks.filter(r=>r.found).length} of ${risks.length}`; };
+  count();
+  if(H.brief) await radio(H.brief);
+  while(risks.some(r=>!r.found)){
+    if(!alive(run))return;
+    const pr=prompt({plain:true,icon:"find",hand:"Find what's wrong: point at it and pinch",handSub:"✌️ Peace sign for a hint",mouse:"Find what's wrong: click on it",mouseSub:"Press H or click 💡 for a hint"});
+    const r=await new Promise(res=>{
+      const offs=[], fin=v=>{ offs.forEach(f=>f()); HS.reveal=null; res(v); };
+      offs.push(onPtr("down",p=>{
+        if(G.mode!=="play"||G.paused)return false;
+        const top=document.elementFromPoint(p.x,p.y); if(top&&top.closest("#hud,#prompt,#radio,#lesson,#next,#dock,#ov,#camPrev,#pz"))return false;
+        const w=toW(p.x,p.y); if(w.x<0||w.y<0||w.x>W||w.y>H)return false;
+        const t=pickTarget(w,p.src==="hand"?24:6,[...risks.filter(x=>!x.found),...decoys]); if(!t)return false;
+        if(risks.includes(t)){ fin(t); return true; }
+        decoyHit(t); return true; }));
+      offs.push(onFrame((now,dt)=>{ if(G.paused||G.mode!=="play")return; HS.idle+=dt;
+        if(HS.idle>FREE_NUDGE_MS){ HS.idle=0; const x=risks.find(q=>!q.found); if(x){ hintMark(x.box); radio("Need a nudge? "+x.hint,4500); } } }));
+      offs.push(()=>{ if(!alive(run))res(null); });
+      HS.reveal=()=>{ const x=risks.find(q=>!q.found&&!q.hinted)||risks.find(q=>!q.found); if(!x)return false; x.hinted=true; hintMark(x.box); radio(x.hint,4500); HS.idle=0; return true; };
+    });
+    pr.hide();
+    if(!r||!alive(run))return;
+    r.found=true; HS.idle=0; count(); sfx("found"); ping(r.box,true); gest("find");
+    if(r.line) await radio(r.line,4500);
+    G.vague=true; G.task=r.task;
+    await TASKS[r.task]({},S);
+    G.task=null; G.vague=false; $("#drag").innerHTML="";
+    if(!alive(run))return;
+    if(r.lesson)lesson(r.lesson[0],r.lesson[1]);
+    await sleep(r.lesson?1500:700);
+    count();
+  }
+  G.hunt=null;
+}
 /* card reader tap (gates and floor 4) */
 async function tapReader(box,glows,label){
   const pocket=showPocket("Your card","17%"); await sleep(450);
@@ -1362,13 +1556,15 @@ function wipe(q,bx,pr){
       mx.fillStyle=g; mx.beginPath(); mx.arc(lx,ly,r*S,0,7); mx.fill();
       pts.forEach(p=>{ if(!p.hit&&Math.hypot(p.x-x,p.y-y)<r*.85){ p.hit=true; covered++; } }); };
     const render=()=>{ cx.clearRect(0,0,cw,ch); cx.globalCompositeOperation="source-over"; cx.drawImage(mask,0,0); cx.globalCompositeOperation="source-in"; cx.drawImage(img,0,0,cw,ch); cx.globalCompositeOperation="source-over"; };
+    const er=el("div","eraser"); er.style.display="none";
     const off=onFrame((now,dt)=>{ if(done||G.paused)return; let at=null, r=0;
-      if(handLive()&&P.src==="hand"&&HAND.pose==="open"){ at=toW(HAND.palm.x,HAND.palm.y); r=38; }
-      else if(P.src==="mouse"&&P.down){ at=toW(P.x,P.y); r=28; }
+      if(handLive()&&HAND.pose!=="none"&&HAND.gp){ const hx=handPtr()?(P.x+HAND.gp.x)/2:HAND.gp.x, hy=handPtr()?(P.y+HAND.gp.y)/2:HAND.gp.y; at=toW(hx,hy); r=54; }
+      else if(P.src==="mouse"&&P.down){ at=toW(P.x,P.y); r=30; }
+      if(at){ er.style.display="block"; Object.assign(er.style,{left:(at.x-r)+"px",top:(at.y-r)+"px",width:2*r+"px",height:2*r+"px"}); } else er.style.display="none";
       if(at&&inW(at,padB(bx,30))){ if(last){ const dd=Math.hypot(at.x-last.x,at.y-last.y), n=Math.ceil(dd/(r/3)); for(let i=1;i<=n;i++)stampAt(lerp(last.x,at.x,i/n),lerp(last.y,at.y,i/n),r);
           if(dd>6&&now-sw>140){ sw=now; sfx("swish"); } } else stampAt(at.x,at.y,r); last=at; render(); } else last=null;
-      const p=covered/pts.length; pr.set(p/.72);
-      if(p>=.72){ done=true; off(); mx.fillStyle="#000"; mx.fillRect(0,0,cw,ch); cv.animate([{opacity:.85},{opacity:1}],{duration:300}); render(); res(); } });
+      const p=covered/pts.length; pr.set(p/.7);
+      if(p>=.7){ done=true; off(); er.remove(); mx.fillStyle="#000"; mx.fillRect(0,0,cw,ch); cv.animate([{opacity:.85},{opacity:1}],{duration:300}); render(); res(); } });
   });
 }
 /* print room drop animations */
@@ -1393,31 +1589,22 @@ function keySvg(c){ const s=document.createElementNS(NS,"svg"); s.setAttribute("
   return { set(deg){ g.setAttribute("transform",`rotate(${deg} ${c[0]} ${c[1]})`); } }; }
 function ledGreen(){ const S=GEO.server, e=el("div","led"); e.style.left=S.ledGreen[0]+"px"; e.style.top=S.ledGreen[1]+"px"; }
 
-/* keypad: show each digit with your fingers */
+/* keypad: point at each digit and pinch it (or hold still on it) */
 function keypadCard(){
   return new Promise(resolve=>{
-    G.entry=[]; let sel=-1, cand=-1, candT=0, fistT=0;
-    const hand=Hand.on;
-    const keys=[1,2,3,4,5,6,7,8,9,0].map(n=>`<button class="opt" data-hit data-act="key" data-d="${n}">${n}</button>`).join("");
-    openOv(bar("Server room keypad","Final")+`<p class="kmsg">${hand?"Show each digit from your top bar with your fingers, then squeeze your fist to enter it. Or tap the keys.":"Enter the four digits from your top bar: tap them, type them or say them."}</p>
+    G.entry=[]; const hand=Hand.on;
+    const keys=[1,2,3,4].map(n=>`<button class="opt key" data-hit data-fill data-dwell="1500" data-act="key" data-d="${n}">${n}</button>`).join("");
+    openOv(bar("Server room keypad","Final")+`<p class="kmsg">${hand?"Point at each digit from your top bar, in order, and pinch it. Holding still on a key works too.":"Enter the four digits from your top bar: click them, type them or say them."}</p>
       <div class="kdisp" id="kdisp"><span></span><span></span><span></span><span></span></div>
-      ${hand?`<div class="reader"><div class="big"><svg class="rr" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" pathLength="100"/></svg><div id="hc"></div></div><div class="rt"><b id="rtb">Show me a number</b><small id="rts">1 to 4 fingers, then a fist</small></div></div>`:""}
-      <div class="kpad">${keys}</div><div style="text-align:center"><button class="btn alt" data-hit data-act="kclear">Clear</button></div>`,"keypad");
-    G.finger=hand; dispKeys();
-    G.keyDone=()=>{ off(); G.finger=false; closeOv(); resolve(); };
-    G.keyWrong=()=>{ sel=-1; cand=-1; };
-    const paint=()=>{ const hc=$("#hc"), rb=$("#rtb"), rs=$("#rts"); if(!hc)return;
-      hc.innerHTML=sel>=1?handIcon(sel):""; rb.textContent=sel>=1?`${sel} selected`:"Show me a number"; rs.textContent=sel>=1?`Squeeze your fist to enter ${sel}`:"1 to 4 fingers, then a fist"; };
-    const off=onFrame((now,dt)=>{ if(G.mode!=="keypad"||G.paused||!hand)return;
-      const live=handLive(), c=live?HAND.count:0;
-      if(c>=1&&c<=4){ if(c===cand)candT+=dt; else {cand=c;candT=0;} if(candT>=380&&sel!==c){ sel=c; fistT=0; tone(880,.05,"triangle",.06); paint(); } }
-      fistT=(live&&HAND.pose==="fist"&&sel>=1)?fistT+dt:Math.max(0,fistT-dt*2);
-      const rr=ov.querySelector(".rr circle"); if(rr)rr.style.strokeDasharray=`${clamp(fistT/380,0,1)*100} 100`;
-      if(fistT>=380){ const d=sel; sel=-1; cand=-1; fistT=0; gest("count"); paint(); pressKey(d); } });
+      <div class="kpad four">${keys}</div><div style="text-align:center"><button class="btn alt" data-hit data-act="kclear">Clear</button></div>`,"keypad");
+    dispKeys();
+    G.keyDone=()=>{ G.keyDone=null; closeOv(); resolve(); };
+    G.keyWrong=()=>{};
   });
 }
 function dispKeys(){ const d=$("#kdisp"); if(!d)return; [...d.children].forEach((s,i)=>s.textContent=G.entry[i]!==undefined?G.entry[i]:"•"); }
-function pressKey(n){ if(G.mode!=="keypad"||G.entry.length>=4)return; G.entry.push(String(n)); sfx("select"); dispKeys(); if(G.entry.length===4)setTimeout(checkCode,380); }
+function pressKey(n){ if(G.mode!=="keypad"||G.entry.length>=4)return; G.entry.push(String(n)); sfx("select"); dispKeys();
+  const kb=ov.querySelector(`.key[data-d="${n}"]`); if(kb){ kb.classList.remove("pressed"); void kb.offsetWidth; kb.classList.add("pressed"); } if(G.entry.length===4)setTimeout(checkCode,380); }
 function checkCode(){ if(G.mode!=="keypad")return;
   if(G.entry.join("")===G.code.join("")){ sfx("unlock"); G.keyDone(); }
   else { sfx("bad"); penalty(); const d=$("#kdisp"); d.classList.remove("shake"); void d.offsetWidth; d.classList.add("shake"); toast("Wrong code. Check the top bar."); G.entry=[]; G.keyWrong(); setTimeout(dispKeys,350); } }
@@ -1432,7 +1619,7 @@ function scanSweep(){ const f=$("#fx"), d=document.createElement("div");
   d.style.cssText="position:absolute;top:0;bottom:0;width:18%;left:-18%;pointer-events:none;mix-blend-mode:screen;background:linear-gradient(90deg,transparent,rgba(123,233,255,.10) 70%,rgba(160,240,255,.55) 98%,transparent)";
   f.appendChild(d); d.animate([{left:"-18%"},{left:"100%"}],{duration:1300,easing:"cubic-bezier(.4,0,.2,1)",delay:350,fill:"forwards"}).finished.then(()=>d.remove()).catch(()=>d.remove()); }
 function newRun(){
-  clearRun(); G.run++; G.scenes=SCENES; G.idx=0;
+  clearRun(); G.run++; G.scenes=SCENES; G.idx=0; SAID.clear();
   Object.assign(G,{score:0,hints:MAX_HINTS,found:0,assessed:0,firstTry:0,hintsUsed:0,misses:[],q:null,entry:[],timeLeft:TIME_LIMIT,gest:{},finger:false,paused:false});
   G.code=shuffle([1,2,3,4]); props.innerHTML=""; $("#fx").innerHTML=""; $("#drag").innerHTML=""; $("#dock").className=""; $("#pocket").className=""; $("#lanyard").className="";
   hidePrompt(); hideRadio(); $("#lesson").classList.remove("on"); $("#next").classList.remove("on"); setBadge("none");
@@ -1445,9 +1632,10 @@ async function beginGame(){
     await enterScene(i);
     for(const b of SCENES[i].beats){
       if(!alive(run))return;
+      if(b.hunt){ await runHunt(b.hunt,SCENES[i]); $("#drag").innerHTML=""; continue; }
       if(b.say){ await radio(b.say); await sleep(300); }
       if(!alive(run))return;
-      G.task=b.task; await TASKS[b.task](b,SCENES[i]); G.task=null;
+      G.task=b.task; await TASKS[b.task](b,SCENES[i]); G.task=null; $("#drag").innerHTML="";
       if(!alive(run))return;
       if(b.lesson)lesson(b.lesson[0],b.lesson[1]);
       await sleep(b.lesson?1500:700);
@@ -1458,9 +1646,10 @@ async function beginGame(){
   }
 }
 async function enterScene(i){
-  G.idx=i; const S=SCENES[i]; hideRadio(); hidePrompt(); $("#lesson").classList.remove("on"); props.innerHTML=""; showBg(S.img); updateHud(); G.mode="play";
+  G.idx=i; const S=SCENES[i]; hideRadio(); hidePrompt(); $("#lesson").classList.remove("on"); $("#drag").innerHTML=""; $("#dock").className=""; hidePocket(); $("#lanyard").className=""; props.innerHTML=""; showBg(S.img); updateHud(); G.mode="play";
   if(!matchMedia("(prefers-reduced-motion: reduce)").matches){ camTo(S.ride?"translateY(6%) scale(1.16)":"scale(1.16)",0); void camEl.offsetWidth; camTo("scale(1)",2600,"cubic-bezier(.2,.7,.3,1)"); }
   scanSweep();
+  prepScene(i);
   $("#fade").style.opacity=0; banner(S); await sleep(1100);
 }
 async function leaveScene(S,run){
@@ -1481,9 +1670,9 @@ async function walk(S){
 }
 function digitCard(S){ return new Promise(res=>{ const d=G.code[G.found]; G.found++; sfx("unlock"); updateHud();
   openOv(bar("Zone "+S.zone+" cleared: "+S.zoneName,"Code digit "+G.found+" of 4")+`<p class="q">${esc(ZONE_MSG[S.zone]||"Zone secured.")} Sam sends you a digit of the all-clear code. It's saved in your top bar.</p>
-    <div class="digit"><b>${d}</b>${handIcon(d)}<span>At the keypad, show ${d} finger${d>1?"s":""}, then squeeze your fist.</span></div>
+    <div class="digit"><b>${d}</b><span>Remember it for the server room keypad.</span></div>
     <button class="btn big" data-hit data-act="digitok">Got it${Hand.on?" 👍":""}</button>`,"digit",true);
-  speak("Zone cleared. Code digit "+G.found+" is "+d);
+  speak("Zone cleared. Code digit "+G.found+" is "+d,"narrator",true);
   let th=0; const off=onFrame((now,dt)=>{ if(G.mode!=="digit"||G.paused)return; th=(handLive()&&HAND.pose==="thumb")?th+dt:Math.max(0,th-dt*2);
     const b=ov.querySelector('[data-act="digitok"]'); if(b)b.style.setProperty("--p",clamp(th/600,0,1)); if(th>=600){ gest("thumb"); G.digitGo(); } });
   G.digitGo=()=>{ off(); G.digitGo=null; closeOv(); res(); }; }); }
@@ -1498,8 +1687,8 @@ function endGame(win){
   const bonus=win?Math.round(G.timeLeft*2):0, total=G.score+bonus, n=Math.max(1,G.assessed), pass=win&&G.firstTry/n>=PASS_MARK, need=Math.ceil(n*PASS_MARK);
   const miss=G.misses.length?'<p class="q" style="margin-bottom:.8vh"><b>Worth a second look</b></p><div class="miss">'+G.misses.map(m=>`<div><b>${esc(m.title)}.</b> ${esc(m.why)}</div>`).join("")+'</div>'
     :(win?'<p class="q">No slips. Every call was right first time. Sam says thanks, and goes home.</p>':"");
-  const GN={pinch:["🤏","grab"],open:["✋","open palm"],fist:["✊","fist"],swipe:["👋","swipe"],twist:["🔑","key turn"],wipe:["🧽","wipe"],count:["☝️","finger answer"],thumb:["👍","thumbs up"]};
-  const chips=Object.keys(GN).filter(k=>G.gest[k]).map(k=>`<span>${GN[k][0]} ${G.gest[k]} ${GN[k][1]}${G.gest[k]>1&&k!=="thumb"?"s":""}</span>`).join("");
+  const GN={find:["🔍","risk found"],pinch:["🤏","grab"],open:["✋","open palm"],fist:["✊","fist"],swipe:["👋","swipe"],twist:["🔑","key turn"],wipe:["🧽","wipe"],peace:["✌️","peace-sign hint"],thumb:["👍","thumbs up"]};
+  const chips=Object.keys(GN).filter(k=>G.gest[k]).map(k=>`<span>${GN[k][0]} ${G.gest[k]} ${G.gest[k]>1&&k!=="thumb"?GN[k][1].replace(/^(\S+)/,"$1s").replace("risks found","risks found"):GN[k][1]}</span>`).join("");
   const head=win?(pass?"All clear. The doors open.":"The doors open, but revisit the course"):"Lockdown engaged. You're in for the night.";
   const sub=win?(pass?`Pass: ${G.firstTry} of ${n} calls right first time.`:`Pass mark is ${need} of ${n} right first time. You got ${G.firstTry}.`)
     :`The floor sealed before you sent the all-clear. You found ${G.found} of 4 code digits.`;
@@ -1518,13 +1707,14 @@ function confetti(){ const c=document.createElement("canvas"); c.width=stage.cli
 function renderIntro(note){
   const tg=(id,on,txt)=>`<button class="tg${on?" on":""}" data-hit data-act="${id}">${txt}</button>`;
   openOv(bar("Lock down the office","Data privacy escape room")+`<h2>7:45 pm. You came back for your charger.</h2>
-    <p class="q">A visitor badge went missing today, so Security is sealing the building in ten minutes. You're the only one still inside. Fix every privacy risk between the car park and your desk with your own hands, collect the four-digit all-clear code, and send it from the server room before the doors lock for the night.</p>
-    <div class="rows"><div><b>☝️</b>Point to move</div><div><b>🤏</b>Pinch to grab and drag</div><div><b>✋</b>Open palm to stop, wipe or ask for a hint</div>
-      <div><b>✊</b>Fist to lock</div><div><b>👋</b>Swipe to push doors</div><div><b>🖐️</b>Show 1 to 4 fingers, then squeeze a fist to answer</div></div>
-    <div class="toggles">${tg("tgTts",G.tts,"🔊 Read aloud")}${tg("tgDwell",G.dwell,"⏱ Hold still to press buttons")}</div>
+    <p class="q">A visitor badge went missing today, so Security is sealing the building in fifteen minutes. You're the only one still inside. Find and fix every privacy risk between the car park and your desk with your own hands, collect the four-digit all-clear code, and send it from the server room before the doors lock for the night.</p>
+    <div class="rows"><div><b>🔍</b>Find the risks yourself: pinch anything that looks wrong</div><div><b>✌️</b>Peace sign for a hint (you only get three)</div><div><b>☝️</b>Point to move</div><div><b>🤏</b>Pinch to grab and drag</div><div><b>✋</b>Open palm to stop, wipe or ask for a hint</div>
+      <div><b>✊</b>Fist to lock</div><div><b>👋</b>Swipe to push doors</div><div><b>🤏</b>Point at an answer and pinch to choose it</div></div>
+    <div class="toggles">${tg("tgTts",G.tts,"🔊 Read aloud")}${tg("tgDwell",G.dwell,"⏱ Hold still to press buttons")}<span class="vbadge"></span><span id="vpick"></span></div>
     <div style="display:flex;gap:1em;flex-wrap:wrap"><button class="btn big" data-hit data-act="hand">Play with hand and voice</button>
     <button class="btn alt" data-hit data-act="mouse" style="font-size:clamp(15px,1.5vw,20px)">Play with mouse</button></div>
     <div class="status" id="st">${esc(note||"Best in Chrome or Edge. Your camera and microphone stay on your computer.")}</div>`,"intro",true);
+  paintVoice(); renderVoicePicker();
 }
 async function enableControls(){
   const st=$("#st"), say=t=>{ if(st)st.textContent=t; };
@@ -1534,10 +1724,10 @@ async function enableControls(){
   renderIntro(okVoice?"The camera or hand tracking didn't start, but voice is on. Use your voice and the mouse.":"The camera, hand tracking and voice didn't start (permission or network). The mouse works for everything.");
 }
 function calibrate(note){
-  const T=[["point","☝️","Point","Move the ring"],["pinch","🤏","Pinch","Grab and drag"],["open","✋","Open hand","Stop and wipe"],["fist","✊","Fist","Lock"],["thumb","👍","Thumbs up","Continue"]];
+  const T=[["point","☝️","Point","Move the ring"],["pinch","🤏","Pinch","Grab and drag"],["open","✋","Open hand","Stop and wipe"],["fist","✊","Fist","Lock"],["thumb","👍","Thumbs up","Continue"],["n2","✌️","Peace sign","Get a hint"]];
   openOv(bar("Warm up your hands","Hand check")+`<h2>Show me your moves</h2><p class="q">${esc(note)} Each tile lights up when I see it. You'll use all of them tonight.</p>
     <div class="tiles">${T.map(([k,i,t,s])=>`<div class="tile" data-k="${k}"><i>${i}</i><b>${t}</b><small>${s}</small></div>`).join("")}</div>
-    <div style="display:flex;gap:1em;align-items:center;flex-wrap:wrap"><button class="btn big" data-hit data-act="start">Start the shift</button><span class="status" id="st" style="margin:0">Show all five, or pinch Start whenever you're ready.</span></div>`,"calib",true);
+    <div style="display:flex;gap:1em;align-items:center;flex-wrap:wrap"><button class="btn big" data-hit data-act="start">Start the shift</button><span class="status" id="st" style="margin:0">Show all six, or pinch Start whenever you're ready.</span></div>`,"calib",true);
   const seen={}, held={};
   const off=onFrame((now,dt)=>{ if(G.mode!=="calib"){ off(); return; } if(!handLive())return; const k=HAND.pose;
     for(const o in held) if(o!==k) held[o]=0; held[k]=(held[k]||0)+dt;
@@ -1564,22 +1754,29 @@ function startVoice(){
 }
 function stopVoice(){ Voice.want=false; try{Voice.rec&&Voice.rec.stop();}catch(e){} G.voiceOn=false; updateHud(); }
 function digitsFrom(t){ const out=[]; t.replace(/[,.-]/g," ").split(/\s+/).forEach(w=>{ if(/^\d+$/.test(w))out.push(...w.split("")); else if(NUM[w]!==undefined)out.push(String(NUM[w])); }); return out; }
+const LET={"a":0,"eh":0,"ay":0,"b":1,"be":1,"bee":1,"c":2,"see":2,"sea":2};
+function letterOf(u){ u=u.toLowerCase().replace(/[.!?,"']/g,"").replace(/\s+/g," ").trim();
+  const m=u.match(/^(?:(?:option|answer|letter|choose|pick)\s+)?([a-z]+)$/); if(!m)return -1; return m[1] in LET?LET[m[1]]:-1; }
 function handleSpeech(txt,alts){
-  const has=re=>alts.some(a=>re.test(a));
-  if(has(/\bpause\b/)){ if(!G.paused)setPause(true); return; }
-  if(G.paused){ if(has(/\b(resume|continue|play|go on)\b/))setPause(false); return; }
-  if(G.mode==="intro"||G.mode==="calib"){ if(has(/\b(start|begin|ready)\b/)){ const b=ov.querySelector('[data-act="start"]')||ov.querySelector('[data-act="mouse"]'); if(b)b.click(); } return; }
-  if(G.mode==="keypad"){ if(has(/\b(clear|reset)\b/)){G.entry=[];dispKeys();return;} for(const a of alts){ const ds=digitsFrom(a); if(ds.length){ ds.forEach(d=>pressKey(d)); return; } } return; }
+  const short=a=>a.split(/\s+/).filter(Boolean).length<=3;
+  const has=re=>alts.some(a=>short(a)&&re.test(a.replace(/[.!?,]/g,"").trim()));
+  if(has(/^(pause|pause the game)$/)){ if(!G.paused)setPause(true); return; }
+  if(G.paused){ if(has(/^(resume|continue|play|go on)$/))setPause(false); return; }
+  if(G.mode==="intro"||G.mode==="calib"){ if(has(/^(start|begin|ready|let's go|lets go)$/)){ const b=ov.querySelector('[data-act="start"]')||ov.querySelector('[data-act="mouse"]'); if(b)b.click(); } return; }
+  if(G.mode==="keypad"){ if(has(/^(clear|reset)$/)){G.entry=[];dispKeys();return;}
+    for(const a of alts){ const ws=a.replace(/[,.-]/g," ").split(/\s+/).filter(Boolean);
+      if(ws.length&&ws.length<=6&&ws.every(w=>/^\d+$/.test(w)||NUM[w]!==undefined)){ digitsFrom(a).forEach(d=>pressKey(d)); return; } } return; }
   if(G.mode==="decision"){ const Q=G.q; if(!Q)return;
-    if(Q.done){ if(has(/\b(continue|next|okay|ok|got it)\b/))closeDecision(); return; }
-    if(has(/\b(hint|help)\b/)){useHint();return;} if(has(/\b(repeat|again|read)\b/)){readQ();return;}
-    for(const a of alts){ const words=a.replace(/^(the\s+)?(option|answer|letter)\s+/,"").split(/\s+/).filter(Boolean);
-      if(words.length<=3) for(const w of words){ const k=ALIAS.findIndex(al=>al.includes(w)); if(k>=0&&!Q.struck.has(k)){answer(k);return;} } }
-    const hits=[]; Q.order.forEach((oi,k)=>{ if(Q.struck.has(k))return; if((Q.D.opts[oi].kw||[]).some(w=>alts.some(a=>a.includes(w))))hits.push(k); });
-    if(hits.length===1)answer(hits[0]); return; }
-  if(G.mode==="digit"){ if(has(/\b(continue|next|okay|ok|got it|go)\b/)&&G.digitGo)G.digitGo(); return; }
-  if(G.mode==="play"){ if($("#next").classList.contains("on")&&has(/\b(next|continue|go|forward|walk)\b/)&&G.nextGo)G.nextGo(); return; }
-  if(G.mode==="end"&&has(/\b(again|restart|replay)\b/))ovClick("again");
+    if(Q.done){ if(has(/^(continue|next|okay|ok|got it|done)$/))closeDecision(); return; }
+    if(has(/^(hint|help|give me a hint)$/)){requestHint();return;}
+    if(has(/^(repeat|read it again|read again|again)$/)){readQ();return;}
+    for(const a of alts){ const k=letterOf(a); if(k>=0&&!Q.struck.has(k)){answer(k);return;} }
+    if(Q.final){ const hits=[]; Q.order.forEach((oi,k)=>{ if(Q.struck.has(k))return; if((Q.D.opts[oi].kw||[]).some(w=>alts.some(a=>a.split(/\s+/).length<=8&&a.includes(w))))hits.push(k); });
+      if(hits.length===1)answer(hits[0]); }
+    return; }
+  if(G.mode==="digit"){ if(has(/^(continue|next|okay|ok|got it|go)$/)&&G.digitGo)G.digitGo(); return; }
+  if(G.mode==="play"){ if(has(/^(hint|help|give me a hint)$/)){ requestHint(); return; } if($("#next").classList.contains("on")&&has(/^(next|continue|go|walk on|lets go|let's go)$/)&&G.nextGo)G.nextGo(); return; }
+  if(G.mode==="end"&&has(/^(again|play again|restart|replay)$/))ovClick("again");
 }
 const ovClick=a=>{ const b=ov.querySelector(`[data-act="${a}"]`); if(b)b.click(); };
 
@@ -1593,20 +1790,23 @@ ov.addEventListener("click",e=>{
   else if(a==="digitok"){ if(G.digitGo)G.digitGo(); }
   else if(a==="key")pressKey(b.dataset.d); else if(a==="kclear"){ G.entry=[]; dispKeys(); if(G.keyWrong)G.keyWrong(); }
   else if(a==="hand")enableControls(); else if(a==="mouse"||a==="start")beginGame();
-  else if(a==="tgTts"){ G.tts=!G.tts; b.classList.toggle("on",G.tts); if(G.tts)speak("Sam's lines and the questions will be read aloud."); }
+  else if(a==="tgTts"){ G.tts=!G.tts; b.classList.toggle("on",G.tts); if(G.tts)speak("Sam's lines and the questions will be read aloud."); else if(VE)VE.stop(); }
   else if(a==="tgDwell"){ G.dwell=!G.dwell; b.classList.toggle("on",G.dwell); }
   else if(a==="again"){ closeOv(); G.mode="intro"; props.innerHTML=""; showBg("parking"); $("#hud").classList.remove("on"); camTo("scale(1)",0); $("#fade").style.opacity=0; renderIntro(); }
 });
 function setPause(on){ if(["intro","calib","end"].includes(G.mode))return; G.paused=on; $("#pz").classList.toggle("show",on); if(!on)G.last=performance.now();
-  try{ if(on)speechSynthesis.pause(); else speechSynthesis.resume(); }catch(e){} }
+  try{ if(on)speechSynthesis.pause(); else speechSynthesis.resume(); }catch(e){}
+  if(on&&VE)VE.stop(); }
+$("#bHint").addEventListener("click",()=>requestHint());
 $("#bPause").addEventListener("click",()=>setPause(true)); $("#bResume").addEventListener("click",()=>setPause(false));
-$("#bTts").addEventListener("click",()=>{ G.tts=!G.tts; updateHud(); toast(G.tts?"Reading aloud":"Read-aloud off"); });
+$("#bTts").addEventListener("click",()=>{ G.tts=!G.tts; if(!G.tts&&VE)VE.stop(); updateHud(); toast(G.tts?"Reading aloud":"Read-aloud off"); });
 $("#bMic").addEventListener("click",()=>{ if(G.voiceOn){stopVoice();toast("Voice off");} else toast(startVoice()?"Voice on":"Voice isn't supported in this browser"); });
 $("#bCam").addEventListener("click",async()=>{ if(!Hand.on){ toast("Starting hand tracking…"); toast((await startHand())?"Hand tracking on":"Hand tracking couldn't start"); } else { $("#camPrev").classList.toggle("show"); updateHud(); } });
 addEventListener("keydown",e=>{
   if(e.key==="p"||e.key==="P"){ setPause(!G.paused); return; } if(G.paused)return;
   const k=e.key.toLowerCase();
-  if(G.mode==="decision"){ const i={"1":0,"2":1,"3":2,a:0,b:1,c:2}[k]; if(i!==undefined)answer(i); else if(k==="h")useHint(); else if(e.key==="Enter"&&G.q&&G.q.done)closeDecision(); }
+  if(k==="h"&&!e.repeat){ requestHint(); return; }
+  if(G.mode==="decision"){ const i={"1":0,"2":1,"3":2,a:0,b:1,c:2}[k]; if(i!==undefined)answer(i); else if(e.key==="Enter"&&G.q&&G.q.done)closeDecision(); }
   else if(G.mode==="keypad"){ if(/^\d$/.test(e.key))pressKey(e.key); else if(e.key==="Backspace"){G.entry.pop();dispKeys();} }
   else if(G.mode==="digit"&&e.key==="Enter"){ if(G.digitGo)G.digitGo(); }
   else if(G.mode==="play"&&(e.key==="Enter"||e.key===" ")&&$("#next").classList.contains("on")){ e.preventDefault(); if(G.nextGo)G.nextGo(); }
